@@ -36,6 +36,7 @@ cc.Class({
     this.powerupSprites = [];
     this.useTileSprites = true;
     this.hudIconSprites = [];
+    this.hudLabels = {};
     this.menuButtons = [
       { id: "start", x: -145, y: -36, w: 230, h: 58 },
       { id: "levels", x: 145, y: -36, w: 230, h: 58 },
@@ -83,6 +84,8 @@ cc.Class({
     if (!this.menuMarioSprite) this.menuMarioSprite = this.makeSpriteNode("MenuMario", -330, -142, 48, 48);
     if (!this.menuGoombaSprite) this.menuGoombaSprite = this.makeSpriteNode("MenuGoomba", 326, -152, 48, 48);
     if (!this.flagSprite) this.flagSprite = this.makeSpriteNode("FlagSprite", 0, 0, 58, 220);
+    if (!this.hudPanelSprite) this.hudPanelSprite = this.makeSpriteNode("HudPanel", 0, 245, 760, 58);
+    if (!this.messagePanelSprite) this.messagePanelSprite = this.makeSpriteNode("MessagePanel", 0, 0, 520, 130);
     if (!this.lifeIcon) this.lifeIcon = this.makeSpriteNode("LifeIcon", -350, 248, 39, 21);
     if (!this.worldIcon) this.worldIcon = this.makeSpriteNode("WorldIcon", 132, 248, 86, 16);
     if (!this.timerIcon) this.timerIcon = this.makeSpriteNode("TimerIcon", 310, 248, 28, 32);
@@ -91,6 +94,7 @@ cc.Class({
     if (!this.hudLabel) this.hudLabel = this.makeLabel("HUD", 0, 245, 24);
     if (!this.startLabel) this.startLabel = this.makeLabel("StartLabel", -145, -46, 25);
     if (!this.levelLabel) this.levelLabel = this.makeLabel("LevelLabel", 145, -46, 25);
+    this.ensureHudLabels();
     if (!this.audioSource) this.audioSource = this.node.addComponent(cc.AudioSource);
     this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
   },
@@ -109,6 +113,8 @@ cc.Class({
   spriteZIndex(name) {
     if (name === "MenuBackground") return -40;
     if (name === "TitleImage" || name.indexOf("Button") >= 0) return 20;
+    if (name === "HudPanel") return 25;
+    if (name === "MessagePanel") return 28;
     if (name.indexOf("DecorSprite") === 0) return -8;
     if (name.indexOf("TileSprite") === 0) return 0;
     if (name === "FlagSprite") return 4;
@@ -122,6 +128,7 @@ cc.Class({
   makeLabel(name, x, y, size) {
     const node = new cc.Node(name);
     node.parent = this.node;
+    node.zIndex = 50;
     node.setPosition(x, y);
     node.setContentSize(900, size * 3);
     const label = node.addComponent(cc.Label);
@@ -131,6 +138,25 @@ cc.Class({
     label.verticalAlign = cc.Label.VerticalAlign.CENTER;
     node.color = cc.Color.WHITE;
     return label;
+  },
+
+  ensureHudLabels() {
+    const specs = [
+      ["lives", -278, 247, 24, 96],
+      ["score", -88, 247, 24, 230],
+      ["world", 166, 247, 24, 140],
+      ["time", 318, 247, 24, 100],
+    ];
+    specs.forEach((spec) => {
+      const key = spec[0];
+      if (this.hudLabels[key]) return;
+      const label = this.makeLabel(`Hud${key}`, spec[1], spec[2], spec[3]);
+      label.node.setContentSize(spec[4], 42);
+      label.fontSize = spec[3];
+      label.lineHeight = spec[3] + 4;
+      label.node.active = false;
+      this.hudLabels[key] = label;
+    });
   },
 
   loadAudio() {
@@ -168,6 +194,13 @@ cc.Class({
       this.frames.buttonOrange = frame;
       this.orangeButtonSprite.spriteFrame = frame;
     });
+    this.loadSpriteFrame("AS2_source/pictures/text_area_0", (frame) => {
+      this.frames.textArea = frame;
+      this.hudPanelSprite.spriteFrame = frame;
+      this.messagePanelSprite.spriteFrame = frame;
+      this.hudPanelSprite.node.active = false;
+      this.messagePanelSprite.node.active = false;
+    });
     this.loadSpriteAtlas("AS2_source/player/mario_small", (atlas) => {
       const frames = ["mario_small_0", "mario_small_1", "mario_small_2", "mario_small_3"]
         .map((name) => atlas.getSpriteFrame(name))
@@ -195,6 +228,7 @@ cc.Class({
     });
     this.loadSpriteFrame("AS2_source/pictures/world", (frame) => {
       this.frames.world = frame;
+      this.worldIcon.spriteFrame = frame;
       this.worldIcon.node.active = false;
     });
     this.loadSpriteFrame("AS2_source/pictures/timer", (frame) => {
@@ -259,6 +293,7 @@ cc.Class({
     this.showMenuImages(true);
     this.titleSprite.node.active = true;
     this.titleLabel.node.active = !this.frames.title;
+    this.infoLabel.node.active = true;
     this.menuBgSprite.node.active = true;
     this.menuBgSprite.node.setPosition(0, 6);
     this.menuBgSprite.node.setContentSize(640, 363);
@@ -268,16 +303,19 @@ cc.Class({
     this.menuGoombaSprite.node.active = true;
     this.playerSprite.node.active = false;
     this.flagSprite.node.active = false;
+    this.hudPanelSprite.node.active = false;
+    this.messagePanelSprite.node.active = false;
     this.hideHudIcons();
+    this.hideHudLabels();
     this.hideBlockSprites();
     this.hideEnemySprites();
     this.titleLabel.node.setPosition(0, 142);
     this.titleLabel.fontSize = 68;
     this.titleLabel.lineHeight = 76;
-    this.infoLabel.node.setPosition(0, -116);
+    this.infoLabel.node.setPosition(0, -126);
     this.infoLabel.fontSize = 22;
     this.infoLabel.lineHeight = 30;
-    this.infoLabel.string = "Move: A/D or Arrow Keys    Jump: W/Space/Up    P: Pause";
+    this.infoLabel.string = "A/D Move    W/Space Jump    P Pause";
     this.blueButtonSprite.node.setPosition(-145, -36);
     this.orangeButtonSprite.node.setPosition(145, -36);
     this.blueButtonSprite.node.setContentSize(230, 58);
@@ -297,6 +335,7 @@ cc.Class({
     this.showMenuImages(true);
     this.titleSprite.node.active = false;
     this.titleLabel.node.active = true;
+    this.infoLabel.node.active = true;
     this.menuBgSprite.node.active = true;
     this.menuBgSprite.node.setPosition(0, 6);
     this.menuBgSprite.node.setContentSize(640, 363);
@@ -310,7 +349,10 @@ cc.Class({
     this.menuGoombaSprite.node.active = false;
     this.playerSprite.node.active = false;
     this.flagSprite.node.active = false;
+    this.hudPanelSprite.node.active = false;
+    this.messagePanelSprite.node.active = false;
     this.hideHudIcons();
+    this.hideHudLabels();
     this.hideBlockSprites();
     this.hideEnemySprites();
     this.titleLabel.node.setPosition(0, 154);
@@ -361,14 +403,17 @@ cc.Class({
     this.menuBgSprite.node.setContentSize(960, 544);
     this.playerSprite.node.active = true;
     this.showHudIcons();
+    this.showHudLabels();
+    this.hudPanelSprite.node.active = true;
+    this.hudPanelSprite.node.setPosition(0, 246);
+    this.hudPanelSprite.node.setContentSize(760, 58);
+    this.messagePanelSprite.node.active = false;
     this.titleLabel.node.active = true;
     this.titleLabel.string = "";
     this.infoLabel.string = "";
     this.startLabel.node.active = false;
     this.levelLabel.node.active = false;
-    this.hudLabel.node.setPosition(0, 248);
-    this.hudLabel.fontSize = 22;
-    this.hudLabel.lineHeight = 30;
+    this.hudLabel.string = "";
     if (this.audioSource && this.bgmClip) this.audioSource.play();
   },
 
@@ -386,10 +431,11 @@ cc.Class({
   },
 
   showHudIcons() {
-    this.lifeIcon.node.setPosition(-350, 248);
-    this.worldIcon.node.active = false;
-    this.timerIcon.node.setPosition(310, 248);
+    this.lifeIcon.node.setPosition(-352, 248);
+    this.worldIcon.node.setPosition(60, 248);
+    this.timerIcon.node.setPosition(385, 248);
     this.lifeIcon.node.active = true;
+    this.worldIcon.node.active = !!this.frames.world;
     this.timerIcon.node.active = true;
   },
 
@@ -397,6 +443,23 @@ cc.Class({
     this.lifeIcon.node.active = false;
     this.worldIcon.node.active = false;
     this.timerIcon.node.active = false;
+  },
+
+  showHudLabels() {
+    Object.keys(this.hudLabels).forEach((key) => {
+      this.hudLabels[key].node.active = true;
+      this.hudLabels[key].node.color = cc.Color.WHITE;
+    });
+    this.hudLabels.lives.node.setPosition(-278, 247);
+    this.hudLabels.score.node.setPosition(-88, 247);
+    this.hudLabels.world.node.setPosition(166, 247);
+    this.hudLabels.time.node.setPosition(318, 247);
+  },
+
+  hideHudLabels() {
+    Object.keys(this.hudLabels).forEach((key) => {
+      this.hudLabels[key].node.active = false;
+    });
   },
 
   makePlayer() {
@@ -453,10 +516,16 @@ cc.Class({
           wall(3656, 360, 72, 108),
           wall(3764, 324, 72, 144),
           brick(4148, 288, 180, 36),
+          brick(430, 250, 72, 36),
+          brick(1188, 252, 144, 36),
+          brick(1840, 250, 108, 36),
+          brick(2748, 250, 144, 36),
+          brick(3368, 250, 144, 36),
 
           cloud(500, 330, 108),
           cloud(1460, 276, 144),
           cloud(2520, 316, 108),
+          cloud(3080, 246, 108),
           cloud(3860, 246, 144),
 
           question(472, 286),
@@ -479,6 +548,8 @@ cc.Class({
           deco("cloud", 2820, 148, 108, 46, 0.55),
           deco("hill", 3340, 382, 116, 96, 0.82),
           deco("bush", 3820, 420, 86, 48, 0.95),
+          deco("cloud", 4120, 112, 144, 48, 0.55),
+          deco("hill", 4240, 382, 128, 96, 0.82),
         ],
         enemies: [
           { x: 840, y: 420 },
@@ -527,6 +598,12 @@ cc.Class({
           wall(4680, 432, 72, 36),
           wall(4788, 396, 72, 72),
           wall(4896, 360, 72, 108),
+          brick(720, 260, 108, 36),
+          brick(1736, 232, 108, 36),
+          brick(2868, 238, 144, 36),
+          brick(3548, 220, 144, 36),
+          brick(4308, 238, 108, 36),
+          cloud(4580, 238, 108),
 
           question(650, 260),
           question(1392, 240),
@@ -550,6 +627,8 @@ cc.Class({
           deco("cloud", 4160, 138, 132, 46, 0.55),
           deco("hill", 4560, 382, 116, 92, 0.82),
           deco("bush", 5010, 420, 92, 48, 0.95),
+          deco("cloud", 4860, 116, 144, 48, 0.55),
+          deco("hill", 5240, 382, 128, 96, 0.82),
         ],
         enemies: [
           { x: 1040, y: 420 },
@@ -579,7 +658,10 @@ cc.Class({
     }
 
     if (this.state === "playing" || this.state === "paused") {
-      if (this.consume(cc.macro.KEY.p)) this.state = this.state === "playing" ? "paused" : "playing";
+      if (this.consume(cc.macro.KEY.p)) {
+        this.state = this.state === "playing" ? "paused" : "playing";
+        if (this.state === "playing") this.message = "";
+      }
       return;
     }
 
@@ -742,7 +824,11 @@ cc.Class({
   },
 
   updateHud() {
-    this.hudLabel.string = `${this.lives}        SCORE ${String(this.score).padStart(6, "0")}        WORLD ${this.level.name}        TIME ${Math.max(0, Math.ceil(this.timer))}`;
+    if (!this.hudLabels.lives) return;
+    this.hudLabels.lives.string = String(this.lives);
+    this.hudLabels.score.string = `SCORE ${String(this.score).padStart(6, "0")}`;
+    this.hudLabels.world.string = this.level ? this.level.name : "1-1";
+    this.hudLabels.time.string = String(Math.max(0, Math.ceil(this.timer)));
   },
 
   draw() {
@@ -755,6 +841,9 @@ cc.Class({
       this.hideDecorSprites();
       this.hidePowerupSprites();
       this.flagSprite.node.active = false;
+      this.hudPanelSprite.node.active = false;
+      this.messagePanelSprite.node.active = false;
+      this.hideHudLabels();
       return;
     }
 
@@ -763,6 +852,9 @@ cc.Class({
       this.hideDecorSprites();
       this.hidePowerupSprites();
       this.flagSprite.node.active = false;
+      this.hudPanelSprite.node.active = false;
+      this.messagePanelSprite.node.active = false;
+      this.hideHudLabels();
       return;
     }
 
@@ -773,6 +865,12 @@ cc.Class({
     this.syncFlagSprite();
 
     if (this.state === "paused") this.message = "PAUSED";
+    const showMessage = !!this.message;
+    this.messagePanelSprite.node.active = showMessage && !!this.frames.textArea;
+    this.infoLabel.node.active = showMessage;
+    this.infoLabel.node.setPosition(0, this.state === "paused" ? 8 : -18);
+    this.infoLabel.fontSize = this.state === "playing" ? 24 : 30;
+    this.infoLabel.lineHeight = this.infoLabel.fontSize + 8;
     this.infoLabel.string = this.message;
   },
 
