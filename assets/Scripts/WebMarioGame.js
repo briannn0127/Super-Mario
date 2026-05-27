@@ -90,11 +90,15 @@ cc.Class({
     if (!this.worldIcon) this.worldIcon = this.makeSpriteNode("WorldIcon", 132, 248, 86, 16);
     if (!this.timerIcon) this.timerIcon = this.makeSpriteNode("TimerIcon", 310, 248, 28, 32);
     if (!this.titleLabel) this.titleLabel = this.makeLabel("Title", 40, 210, 64);
+    if (!this.superLabel) this.superLabel = this.makeLabel("SuperTitle", 0, 196, 34);
+    if (!this.webMarioLabel) this.webMarioLabel = this.makeLabel("WebMarioTitle", 0, 138, 70);
+    if (!this.courseLabel) this.courseLabel = this.makeLabel("CourseTitle", 0, 88, 24);
     if (!this.infoLabel) this.infoLabel = this.makeLabel("Info", 28, 140, 24);
     if (!this.hudLabel) this.hudLabel = this.makeLabel("HUD", 0, 245, 24);
     if (!this.startLabel) this.startLabel = this.makeLabel("StartLabel", -145, -46, 25);
     if (!this.levelLabel) this.levelLabel = this.makeLabel("LevelLabel", 145, -46, 25);
     this.ensureHudLabels();
+    this.styleMenuTitleLabels();
     if (!this.audioSource) this.audioSource = this.node.addComponent(cc.AudioSource);
     this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
   },
@@ -157,6 +161,21 @@ cc.Class({
       label.node.active = false;
       this.hudLabels[key] = label;
     });
+  },
+
+  styleMenuTitleLabels() {
+    const outline = (label, color, width) => {
+      let component = label.node.getComponent(cc.LabelOutline);
+      if (!component) component = label.node.addComponent(cc.LabelOutline);
+      component.color = color;
+      component.width = width;
+    };
+    this.superLabel.node.color = new cc.Color(255, 238, 74);
+    this.webMarioLabel.node.color = new cc.Color(255, 74, 62);
+    this.courseLabel.node.color = new cc.Color(255, 255, 255);
+    outline(this.superLabel, new cc.Color(48, 66, 100), 4);
+    outline(this.webMarioLabel, new cc.Color(42, 70, 116), 7);
+    outline(this.courseLabel, new cc.Color(38, 64, 86), 3);
   },
 
   loadAudio() {
@@ -291,8 +310,11 @@ cc.Class({
     this.message = "";
     this.titleLabel.string = "Web Mario";
     this.showMenuImages(true);
-    this.titleSprite.node.active = true;
-    this.titleLabel.node.active = !this.frames.title;
+    this.titleSprite.node.active = false;
+    this.titleLabel.node.active = false;
+    this.superLabel.node.active = true;
+    this.webMarioLabel.node.active = true;
+    this.courseLabel.node.active = true;
     this.infoLabel.node.active = true;
     this.menuBgSprite.node.active = true;
     this.menuBgSprite.node.setPosition(0, 6);
@@ -309,9 +331,18 @@ cc.Class({
     this.hideHudLabels();
     this.hideBlockSprites();
     this.hideEnemySprites();
-    this.titleLabel.node.setPosition(0, 142);
-    this.titleLabel.fontSize = 68;
-    this.titleLabel.lineHeight = 76;
+    this.superLabel.node.setPosition(0, 188);
+    this.superLabel.fontSize = 34;
+    this.superLabel.lineHeight = 42;
+    this.superLabel.string = "SUPER";
+    this.webMarioLabel.node.setPosition(0, 130);
+    this.webMarioLabel.fontSize = 70;
+    this.webMarioLabel.lineHeight = 78;
+    this.webMarioLabel.string = "WEB MARIO";
+    this.courseLabel.node.setPosition(0, 82);
+    this.courseLabel.fontSize = 24;
+    this.courseLabel.lineHeight = 32;
+    this.courseLabel.string = "WORLD 1 ADVENTURE";
     this.infoLabel.node.setPosition(0, -126);
     this.infoLabel.fontSize = 22;
     this.infoLabel.lineHeight = 30;
@@ -335,6 +366,9 @@ cc.Class({
     this.showMenuImages(true);
     this.titleSprite.node.active = false;
     this.titleLabel.node.active = true;
+    this.superLabel.node.active = false;
+    this.webMarioLabel.node.active = false;
+    this.courseLabel.node.active = false;
     this.infoLabel.node.active = true;
     this.menuBgSprite.node.active = true;
     this.menuBgSprite.node.setPosition(0, 6);
@@ -409,6 +443,9 @@ cc.Class({
     this.hudPanelSprite.node.setContentSize(760, 58);
     this.messagePanelSprite.node.active = false;
     this.titleLabel.node.active = true;
+    this.superLabel.node.active = false;
+    this.webMarioLabel.node.active = false;
+    this.courseLabel.node.active = false;
     this.titleLabel.string = "";
     this.infoLabel.string = "";
     this.startLabel.node.active = false;
