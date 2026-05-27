@@ -480,7 +480,7 @@ cc.Class({
   startGame(index) {
     const levels = this.makeLevels();
     this.levelIndex = index;
-    this.level = levels[index];
+    this.level = this.makeEditableLevel(index, levels[index]) || levels[index];
     this.player = this.makePlayer();
     this.player.x = this.level.start.x;
     this.player.y = this.level.start.y;
@@ -525,6 +525,57 @@ cc.Class({
     this.levelLabel.node.active = false;
     this.hudLabel.string = "";
     if (this.audioSource && this.bgmClip) this.audioSource.play();
+  },
+
+  makeEditableLevel(index, fallbackLevel) {
+    const rootName = `Level${index + 1}Editable`;
+    const root = this.node.parent && this.node.parent.getChildByName(rootName);
+    if (!root) return null;
+
+    const blocks = [];
+    const enemies = [];
+    let start = null;
+    let flag = null;
+
+    const visit = (node) => {
+      const name = node.name || "";
+      const rect = this.nodeToWorldRect(root, node);
+      if (name.indexOf("Ground_") === 0) blocks.push(Object.assign({ type: "ground" }, rect));
+      if (name.indexOf("Pipe_") === 0) blocks.push(Object.assign({ type: "pipe" }, rect));
+      if (name.indexOf("Brick_") === 0) blocks.push(Object.assign({ type: "brick" }, rect));
+      if (name.indexOf("Wall_") === 0) blocks.push(Object.assign({ type: "wall" }, rect));
+      if (name.indexOf("CloudPlatform_") === 0) blocks.push(Object.assign({ type: "cloud" }, rect));
+      if (name.indexOf("Question_") === 0) blocks.push(Object.assign({ type: "question", used: false, bump: 0 }, rect));
+      if (name.indexOf("Enemy_") === 0) enemies.push({ x: rect.x, y: rect.y });
+      if (name === "Start") start = { x: rect.x, y: rect.y };
+      if (name === "Flag") flag = { x: rect.x, y: rect.y };
+      node.children.forEach(visit);
+    };
+    root.children.forEach(visit);
+
+    if (!blocks.length) return null;
+    const maxX = blocks.reduce((max, block) => Math.max(max, block.x + block.w), 0);
+    root.active = false;
+    return {
+      name: fallbackLevel.name,
+      length: Math.max(fallbackLevel.length, maxX + 420),
+      start: start || fallbackLevel.start,
+      blocks,
+      decorations: fallbackLevel.decorations,
+      enemies: enemies.length ? enemies : fallbackLevel.enemies,
+      flag: flag || fallbackLevel.flag,
+    };
+  },
+
+  nodeToWorldRect(root, node) {
+    const p = this.editableLocalPosition(root, node);
+    const size = node.getContentSize();
+    return {
+      x: p.x + this.VIEW_W / 2 - size.width / 2,
+      y: this.VIEW_H / 2 - p.y - size.height / 2,
+      w: size.width,
+      h: size.height,
+    };
   },
 
   showMenuImages(active) {
