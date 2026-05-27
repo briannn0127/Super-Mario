@@ -448,7 +448,7 @@ cc.Class({
   showHudLabels() {
     Object.keys(this.hudLabels).forEach((key) => {
       this.hudLabels[key].node.active = true;
-      this.hudLabels[key].node.color = cc.Color.WHITE;
+      this.hudLabels[key].node.color = new cc.Color(38, 64, 86);
     });
     this.hudLabels.lives.node.setPosition(-278, 247);
     this.hudLabels.score.node.setPosition(-88, 247);
@@ -949,10 +949,7 @@ cc.Class({
         const tileSize = 36;
         const cols = Math.max(1, Math.ceil(block.w / tileSize));
         for (let col = 0; col < cols; col += 1) {
-          const frame = col === cols - 1
-            ? (this.frames.cloudRight || this.frames.cloudLeft || this.frames.brickTile)
-            : (this.frames.cloudLeft || this.frames.cloudRight || this.frames.brickTile);
-          this.placeBlockSprite(index, frame, block.x + col * tileSize, block.y, tileSize, block.h);
+          this.placeBlockSprite(index, this.frames.brickTile, block.x + col * tileSize, block.y, tileSize, tileSize);
           index += 1;
         }
         return;
@@ -985,6 +982,19 @@ cc.Class({
       const parallax = item.parallax || 1;
       const x = item.x - this.camera * parallax;
       if (x + item.w < -120 || x > this.VIEW_W + 120) return;
+      if (item.type === "cloud" && (this.frames.cloudLeft || this.frames.cloudRight)) {
+        const puffW = 42;
+        const puffH = 38;
+        const cols = Math.max(2, Math.ceil(item.w / puffW));
+        for (let col = 0; col < cols; col += 1) {
+          const frame = col === cols - 1
+            ? (this.frames.cloudRight || this.frames.cloudLeft)
+            : (this.frames.cloudLeft || this.frames.cloudRight);
+          this.placeDecorSprite(index, frame, x + col * (puffW - 5), item.y, puffW, puffH);
+          index += 1;
+        }
+        return;
+      }
       const frame = this.decorFrame(item.type);
       if (!frame) return;
       this.placeDecorSprite(index, frame, x, item.y, item.w, item.h);
