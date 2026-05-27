@@ -173,9 +173,13 @@ cc.Class({
     this.superLabel.node.color = new cc.Color(255, 238, 74);
     this.webMarioLabel.node.color = new cc.Color(255, 74, 62);
     this.courseLabel.node.color = new cc.Color(255, 255, 255);
+    this.startLabel.node.color = new cc.Color(38, 64, 86);
+    this.levelLabel.node.color = new cc.Color(38, 64, 86);
     outline(this.superLabel, new cc.Color(48, 66, 100), 4);
     outline(this.webMarioLabel, new cc.Color(42, 70, 116), 7);
     outline(this.courseLabel, new cc.Color(38, 64, 86), 3);
+    outline(this.startLabel, new cc.Color(255, 255, 255), 2);
+    outline(this.levelLabel, new cc.Color(255, 255, 255), 2);
   },
 
   loadAudio() {
@@ -353,8 +357,12 @@ cc.Class({
     this.orangeButtonSprite.node.setContentSize(230, 58);
     this.startLabel.node.active = true;
     this.levelLabel.node.active = true;
-    this.startLabel.node.setPosition(-145, -46);
-    this.levelLabel.node.setPosition(145, -46);
+    this.startLabel.node.setPosition(-145, -38);
+    this.levelLabel.node.setPosition(145, -38);
+    this.startLabel.fontSize = 23;
+    this.levelLabel.fontSize = 23;
+    this.startLabel.lineHeight = 28;
+    this.levelLabel.lineHeight = 28;
     this.startLabel.string = "START GAME";
     this.levelLabel.string = "LEVEL SELECT";
     this.hudLabel.string = "";
