@@ -365,7 +365,72 @@ cc.Class({
     this.levelLabel.lineHeight = 28;
     this.startLabel.string = "START GAME";
     this.levelLabel.string = "LEVEL SELECT";
+    this.applyEditableMenuLayout();
     this.hudLabel.string = "";
+  },
+
+  applyEditableMenuLayout() {
+    const root = this.node.parent && this.node.parent.getChildByName("MenuEditable");
+    if (!root) return;
+
+    const direct = (name) => root.getChildByName(name);
+    const copyNode = (target, source) => {
+      if (!target || !source) return;
+      const p = this.editableLocalPosition(root, source);
+      target.node.setPosition(p.x, p.y);
+      target.node.setContentSize(source.getContentSize());
+    };
+    const copyLabel = (target, source) => {
+      if (!target || !source) return;
+      const p = this.editableLocalPosition(root, source);
+      const sourceLabel = source.getComponent(cc.Label);
+      if (sourceLabel) {
+        target.string = sourceLabel.string;
+        target.fontSize = sourceLabel.fontSize;
+        target.lineHeight = sourceLabel.lineHeight;
+      }
+      target.node.color = source.color;
+      target.node.setPosition(p.x, p.y);
+      target.node.setContentSize(source.getContentSize());
+    };
+
+    copyNode(this.menuBgSprite, direct("Background"));
+    copyLabel(this.superLabel, direct("Title_SUPER"));
+    copyLabel(this.webMarioLabel, direct("Title_WEB_MARIO"));
+    copyLabel(this.courseLabel, direct("Subtitle_WORLD_1_ADVENTURE"));
+
+    const startButton = direct("StartButton");
+    const levelButton = direct("LevelButton");
+    copyNode(this.blueButtonSprite, startButton);
+    copyNode(this.orangeButtonSprite, levelButton);
+    if (startButton) copyLabel(this.startLabel, startButton.getChildByName("Label_START_GAME"));
+    if (levelButton) copyLabel(this.levelLabel, levelButton.getChildByName("Label_LEVEL_SELECT"));
+
+    if (startButton) {
+      const p = this.editableLocalPosition(root, startButton);
+      const size = startButton.getContentSize();
+      this.menuButtons[0] = { id: "start", x: p.x, y: p.y, w: size.width, h: size.height };
+    }
+    if (levelButton) {
+      const p = this.editableLocalPosition(root, levelButton);
+      const size = levelButton.getContentSize();
+      this.menuButtons[1] = { id: "levels", x: p.x, y: p.y, w: size.width, h: size.height };
+    }
+
+    root.active = false;
+  },
+
+  editableLocalPosition(root, node) {
+    let x = 0;
+    let y = 0;
+    let current = node;
+    while (current && current !== root.parent) {
+      x += current.x;
+      y += current.y;
+      if (current === root) break;
+      current = current.parent;
+    }
+    return cc.v2(x, y);
   },
 
   showLevelSelect() {
