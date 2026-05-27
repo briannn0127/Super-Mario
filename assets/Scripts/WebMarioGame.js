@@ -225,13 +225,16 @@ cc.Class({
       this.messagePanelSprite.node.active = false;
     });
     this.loadSpriteAtlas("AS2_source/player/mario_small", (atlas) => {
-      const frames = ["mario_small_0", "mario_small_1", "mario_small_2", "mario_small_3"]
-        .map((name) => atlas.getSpriteFrame(name))
-        .filter((frame) => !!frame);
+      const frames = this.collectAtlasFrames(atlas, "mario_small", 36);
       this.frames.marioSmallFrames = frames;
       this.frames.marioSmall = frames[0];
       this.playerSprite.spriteFrame = frames[0];
       this.menuMarioSprite.spriteFrame = frames[0];
+    });
+    this.loadSpriteAtlas("AS2_source/player/mario_big", (atlas) => {
+      const frames = this.collectAtlasFrames(atlas, "mario_big", 45);
+      this.frames.marioBigFrames = frames;
+      this.frames.marioBig = frames[0];
     });
     this.loadSpriteAtlas("AS2_source/enemies/Goomba", (atlas) => {
       const frames = ["Goomba_0", "Goomba_1", "Goomba_2"]
@@ -293,6 +296,15 @@ cc.Class({
     cc.resources.load(path, cc.SpriteAtlas, (err, atlas) => {
       if (!err && atlas) callback(atlas);
     });
+  },
+
+  collectAtlasFrames(atlas, prefix, maxIndex) {
+    const frames = [];
+    for (let i = 0; i <= maxIndex; i += 1) {
+      const frame = atlas.getSpriteFrame(`${prefix}_${i}`);
+      if (frame) frames.push(frame);
+    }
+    return frames;
   },
 
   loadAtlasFrame(path, rect, callback) {
@@ -852,7 +864,7 @@ cc.Class({
       this.player.vy = this.player.big ? -780 : -720;
       this.playOneShot(this.jumpClip);
     }
-    this.player.anim += dt * Math.abs(this.player.vx);
+    this.player.anim += dt * (60 + Math.abs(this.player.vx));
     this.player.invincible = Math.max(0, this.player.invincible - dt);
     this.moveBody(this.player, dt, true);
     if (this.player.y > 660) this.hurtPlayer();
@@ -1039,14 +1051,12 @@ cc.Class({
     if (this.playerSprite && this.frames.marioSmall && this.player) {
       const walking = this.player.onGround && Math.abs(this.player.vx) > 10;
       const jumping = !this.player.onGround;
-      const playerFrames = this.frames.marioSmallFrames || [this.frames.marioSmall];
-      const playerFrameIndex = jumping
-        ? Math.min(3, playerFrames.length - 1)
-        : walking
-          ? Math.floor(this.player.anim / 90) % Math.min(3, playerFrames.length)
-          : 0;
+      const playerFrames = this.player.big
+        ? (this.frames.marioBigFrames || this.frames.marioSmallFrames || [this.frames.marioSmall])
+        : (this.frames.marioSmallFrames || [this.frames.marioSmall]);
+      const selectedFrame = this.pickMarioFrame(playerFrames, walking, jumping);
       this.playerSprite.node.active = true;
-      this.playerSprite.spriteFrame = playerFrames[playerFrameIndex] || this.frames.marioSmall;
+      this.playerSprite.spriteFrame = selectedFrame || this.frames.marioSmall;
       this.playerSprite.node.setPosition(
         this.player.x - this.camera - this.VIEW_W / 2 + this.player.w / 2,
         this.VIEW_H / 2 - this.player.y - this.player.h / 2
@@ -1070,6 +1080,28 @@ cc.Class({
       );
       sprite.node.setContentSize(40, 42);
     });
+  },
+
+  pickMarioFrame(frames, walking, jumping) {
+    if (!frames || !frames.length) return null;
+    const byTime = (items, speed) => items[Math.floor(this.player.anim / speed) % items.length];
+    if (jumping) {
+      const jumpFrames = frames.slice(Math.max(0, frames.length - 6));
+      if (jumpFrames.length) {
+        const rising = this.player.vy < -180;
+        const falling = this.player.vy > 180;
+        const index = rising ? 0 : falling ? jumpFrames.length - 1 : Math.floor(jumpFrames.length / 2);
+        return jumpFrames[index] || jumpFrames[0];
+      }
+    }
+
+    if (walking) {
+      const walkFrames = frames.slice(2, Math.max(3, frames.length - 6));
+      return byTime(walkFrames.length ? walkFrames : frames, 75);
+    }
+
+    const idleFrames = frames.slice(0, Math.min(2, frames.length));
+    return byTime(idleFrames.length ? idleFrames : frames, 520);
   },
 
   syncBlockSprites() {
