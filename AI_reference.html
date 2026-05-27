@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AI Reference</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.5; margin: 42px; color: #1f2937; }
+    h1 { margin-top: 0; }
+    code { background: #f1f5f9; padding: 2px 5px; border-radius: 4px; }
+    section { margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <h1>AI Reference</h1>
+  <section>
+    <h2>AI Tool(s) Used</h2>
+    <p>OpenAI ChatGPT / Codex was used as an implementation and debugging assistant.</p>
+  </section>
+  <section>
+    <h2>Scope of Usage</h2>
+    <p>Main assisted files:</p>
+    <ul>
+      <li><code>assets/Scripts/WebMarioGame.js</code>, lines 12-1060: Cocos Creator 2.4.8 game logic, resource loading, state flow, physics-style collision, asset-based map design, scenery layering, visible power-up items, animation, UI, and audio.</li>
+      <li><code>assets/menu.fire</code>: default Cocos Creator scene containing Canvas, Main Camera, and the Game node.</li>
+      <li><code>README.md</code>: scoring checklist, run instructions, asset list, and submission notes.</li>
+    </ul>
+    <p>Representative prompts included: "詳細參考pdf要求完成作業", "要用2.4.8版本", "盡量全部用他給的素材", and "詳細閱讀滿足作業要求".</p>
+  </section>
+  <section>
+    <h2>Refinement & Explanation</h2>
+    <p>The code was revised into a Cocos Creator 2.4.8 2D project using global <code>cc</code> APIs and a <code>cc.Class</code> component. The final implementation includes menu flow, level select, two maps, gravity, collision, camera following, static walls, question blocks, visible mushroom power-ups, player damage, respawn, stomp-only enemy defeat, HUD, timer, atlas-based player/enemy animation, and one-shot sound effects layered over BGM.</p>
+    <p>The visual implementation was refined to use the provided assignment assets where possible: menu background/title/buttons, HUD icons, Mario and Goomba atlases, flag image, tile sprites, pipe/platform/wall tiles, decorative hills/bushes/clouds, and assignment audio files.</p>
+  </section>
+</body>
+</html>

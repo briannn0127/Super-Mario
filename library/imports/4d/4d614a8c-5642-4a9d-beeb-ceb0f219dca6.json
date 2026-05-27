@@ -1,0 +1,143 @@
+{
+  "__type__": "cc.SpriteAtlas",
+  "_name": "mario_big.plist",
+  "_objFlags": 0,
+  "_native": "",
+  "_spriteFrames": {
+    "mario_big_0": {
+      "__uuid__": "c26f934b-5c43-44e4-a2e5-c67ad530fdfd"
+    },
+    "mario_big_1": {
+      "__uuid__": "f2c05480-25c2-48f6-ae70-28352973a579"
+    },
+    "mario_big_10": {
+      "__uuid__": "1ebfbf9d-f0ce-4d04-9d2e-b5656cb835b5"
+    },
+    "mario_big_11": {
+      "__uuid__": "94265fa4-6114-4997-b79f-092184ee5fce"
+    },
+    "mario_big_12": {
+      "__uuid__": "61ee0ca5-a38f-4445-b270-fa1325e97100"
+    },
+    "mario_big_13": {
+      "__uuid__": "8023ab2c-4f94-46e8-a024-e80cffc982eb"
+    },
+    "mario_big_14": {
+      "__uuid__": "493a382f-4aa8-4571-92d2-67f4a5e7f2e3"
+    },
+    "mario_big_15": {
+      "__uuid__": "65a6ed91-f9c0-4239-80b5-7add3612c247"
+    },
+    "mario_big_16": {
+      "__uuid__": "1ace2672-cb6c-4aeb-9681-bb1c5747448d"
+    },
+    "mario_big_17": {
+      "__uuid__": "687c2c3c-f190-4a8f-8890-4d2417d716f4"
+    },
+    "mario_big_18": {
+      "__uuid__": "7d3c3634-3bc5-4a1f-ab16-3a6a5ddae12a"
+    },
+    "mario_big_19": {
+      "__uuid__": "7e309afd-d54b-4a18-a15c-0f636939f68c"
+    },
+    "mario_big_2": {
+      "__uuid__": "e6f2db4c-de55-4330-b1f7-a4fab8076c9e"
+    },
+    "mario_big_20": {
+      "__uuid__": "b06bbbe1-90ea-473d-b9e1-8517bfe81937"
+    },
+    "mario_big_21": {
+      "__uuid__": "6f15dc0a-9f83-48cf-ba83-244d85320363"
+    },
+    "mario_big_22": {
+      "__uuid__": "42fd0ad6-7462-4b31-995a-dc18c0262523"
+    },
+    "mario_big_23": {
+      "__uuid__": "a7916167-eb47-4eb4-92fe-fce6f32e36cb"
+    },
+    "mario_big_24": {
+      "__uuid__": "650aff6d-a0dc-4fb9-9fc4-945812b36732"
+    },
+    "mario_big_25": {
+      "__uuid__": "900dd0f4-39ca-43e8-913c-c3a81351bfcf"
+    },
+    "mario_big_26": {
+      "__uuid__": "9ac881a0-9f6a-4703-bf32-fd3a5fcc7a6b"
+    },
+    "mario_big_27": {
+      "__uuid__": "8e1e3811-d30e-437e-b87b-5a6f01196851"
+    },
+    "mario_big_28": {
+      "__uuid__": "096a7eb2-22b8-4736-b2fa-2be27040d245"
+    },
+    "mario_big_29": {
+      "__uuid__": "4b88a524-e05e-4934-a71b-875c45aac6bb"
+    },
+    "mario_big_3": {
+      "__uuid__": "071315b1-a7d6-48d3-b344-2377e190cd37"
+    },
+    "mario_big_30": {
+      "__uuid__": "816442d6-c3f9-49d1-b68a-70945252fd52"
+    },
+    "mario_big_31": {
+      "__uuid__": "ac847b1e-e54f-44e4-b1eb-246c46583cac"
+    },
+    "mario_big_32": {
+      "__uuid__": "850a13aa-33cf-4ff8-b478-d03fc28fc523"
+    },
+    "mario_big_33": {
+      "__uuid__": "373ecf3b-0146-4ccb-b482-6345b3093d9f"
+    },
+    "mario_big_34": {
+      "__uuid__": "f11c4e99-ef6c-4cb7-b9d5-ee82c672a2bd"
+    },
+    "mario_big_35": {
+      "__uuid__": "dcbdbd48-9122-4715-913c-d9659bf9a692"
+    },
+    "mario_big_36": {
+      "__uuid__": "270b3222-4ac8-4690-9b9b-5238d72c5770"
+    },
+    "mario_big_37": {
+      "__uuid__": "ac8148de-f229-4c15-b9cc-65efbab9c1a6"
+    },
+    "mario_big_38": {
+      "__uuid__": "e10d6bab-13be-46f9-a2bd-7e46866df8d5"
+    },
+    "mario_big_39": {
+      "__uuid__": "7e78458b-d79d-41c5-a30c-a96db396247e"
+    },
+    "mario_big_4": {
+      "__uuid__": "e19a8ed1-db90-4a3d-82a2-f068c926224a"
+    },
+    "mario_big_40": {
+      "__uuid__": "fd6b0574-79af-4fb3-bc2f-3198697f65b2"
+    },
+    "mario_big_41": {
+      "__uuid__": "1d56d450-b5b2-48d5-a545-a66fb9ca5ee8"
+    },
+    "mario_big_42": {
+      "__uuid__": "66e96c19-11e8-4c70-b58a-4c83e9b297b9"
+    },
+    "mario_big_43": {
+      "__uuid__": "972c654d-f15b-4952-bfaa-6ae7f1676b5c"
+    },
+    "mario_big_44": {
+      "__uuid__": "5bd81191-f7e3-49ee-b4e0-b25528ad9ff0"
+    },
+    "mario_big_5": {
+      "__uuid__": "cb2db3a7-24f0-4122-bc2e-ea9ab6dbed7e"
+    },
+    "mario_big_6": {
+      "__uuid__": "8c1dd5d3-6e8b-4a2e-ac8b-f1cd313747d2"
+    },
+    "mario_big_7": {
+      "__uuid__": "3de334c8-2bce-48d3-a733-962bd7d0f3db"
+    },
+    "mario_big_8": {
+      "__uuid__": "95f86ee0-85cd-4edc-94a7-dae68b8f92f9"
+    },
+    "mario_big_9": {
+      "__uuid__": "4323b92a-6de4-48f8-8f8f-cb8517d5e1e3"
+    }
+  }
+}

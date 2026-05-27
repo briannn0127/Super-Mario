@@ -1,0 +1,28 @@
+{
+  "__type__": "cc.SpriteFrame",
+  "content": {
+    "name": "Goomba_3",
+    "texture": "ba279471-97b7-4d6c-abc3-47a914f3194f",
+    "atlas": "95a89021-8154-480b-b42e-a596a6433e48",
+    "rect": [
+      67,
+      1,
+      20,
+      24
+    ],
+    "offset": [
+      0,
+      0
+    ],
+    "originalSize": [
+      20,
+      24
+    ],
+    "capInsets": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "__type__": "cc.SpriteFrame",
+  "content": {
+    "name": "mario_Tanuki",
+    "texture": "b8b87918-9714-406b-a6cb-427cd80ae503",
+    "atlas": "",
+    "rect": [
+      12,
+      2,
+      261,
+      122
+    ],
+    "offset": [
+      0.5,
+      0
+    ],
+    "originalSize": [
+      284,
+      126
+    ],
+    "capInsets": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}

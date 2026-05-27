@@ -1,0 +1,28 @@
+{
+  "__type__": "cc.SpriteFrame",
+  "content": {
+    "name": "mario_fire",
+    "texture": "272c2ac3-896e-49b0-8b36-790004d53132",
+    "atlas": "",
+    "rect": [
+      5,
+      17,
+      629,
+      147
+    ],
+    "offset": [
+      -4,
+      -2.5
+    ],
+    "originalSize": [
+      647,
+      176
+    ],
+    "capInsets": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}
