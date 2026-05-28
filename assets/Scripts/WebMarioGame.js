@@ -2108,11 +2108,11 @@ cc.Class({
   onTouchEnd(event) {
     const point = this.node.convertToNodeSpaceAR(event.getLocation());
     if (this.state === "menu") {
-      if (this.pointInButton(point, this.menuButtons[0])) {
+      if (this.pointInSprite(point, this.blueButtonSprite, 8)) {
         this.blueButtonSprite.spriteFrame = this.frames.buttonBluePress || this.blueButtonSprite.spriteFrame;
         this.startGame(0);
       }
-      if (this.pointInButton(point, this.menuButtons[1])) {
+      if (this.pointInSprite(point, this.orangeButtonSprite, 8)) {
         this.orangeButtonSprite.spriteFrame = this.frames.buttonOrangePress || this.orangeButtonSprite.spriteFrame;
         this.showLevelSelect();
       }
@@ -2120,11 +2120,11 @@ cc.Class({
     }
 
     if (this.state === "levels") {
-      if (this.pointInButton(point, { x: -150, y: 10, w: 250, h: 72 })) {
+      if (this.pointInSprite(point, this.blueButtonSprite, 8)) {
         this.blueButtonSprite.spriteFrame = this.frames.buttonBluePress || this.blueButtonSprite.spriteFrame;
         this.startGame(0);
       }
-      if (this.pointInButton(point, { x: 150, y: 10, w: 250, h: 72 })) {
+      if (this.pointInSprite(point, this.orangeButtonSprite, 8)) {
         this.orangeButtonSprite.spriteFrame = this.frames.buttonOrangePress || this.orangeButtonSprite.spriteFrame;
         this.startGame(1);
       }
@@ -2136,6 +2136,18 @@ cc.Class({
       && point.x <= button.x + button.w / 2
       && point.y >= button.y - button.h / 2
       && point.y <= button.y + button.h / 2;
+  },
+
+  pointInSprite(point, sprite, padding) {
+    if (!sprite || !sprite.node || !sprite.node.active) return false;
+    const size = sprite.node.getContentSize();
+    const pad = padding || 0;
+    return this.pointInButton(point, {
+      x: sprite.node.x,
+      y: sprite.node.y,
+      w: size.width + pad * 2,
+      h: size.height + pad * 2,
+    });
   },
 
   onKeyDown(event) {
