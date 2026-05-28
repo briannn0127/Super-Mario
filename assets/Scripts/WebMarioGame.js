@@ -1401,7 +1401,10 @@ cc.Class({
 
   getEnemyFrames(enemy) {
     if (enemy.type === "flower") return this.frames.flowerFrames || (this.frames.flower ? [this.frames.flower] : []);
-    if (enemy.type === "turtle") return this.frames.turtleFrames || (this.frames.turtle ? [this.frames.turtle] : []);
+    if (enemy.type === "turtle") {
+      const frames = this.frames.turtleFrames || (this.frames.turtle ? [this.frames.turtle] : []);
+      return frames.slice(0, Math.min(2, frames.length));
+    }
     return this.frames.goombaFrames || (this.frames.goomba ? [this.frames.goomba] : []);
   },
 
