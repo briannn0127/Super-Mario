@@ -736,6 +736,7 @@ cc.Class({
 
     if (!blocks.length) return null;
     const maxX = blocks.reduce((max, block) => Math.max(max, block.x + block.w), 0);
+    const mergedEnemies = this.mergeEditableEnemies(enemies, fallbackLevel.enemies);
     root.active = false;
     return {
       name: fallbackLevel.name,
@@ -743,9 +744,22 @@ cc.Class({
       start: start || fallbackLevel.start,
       blocks,
       decorations: fallbackLevel.decorations,
-      enemies: enemies.length ? enemies : fallbackLevel.enemies,
+      enemies: mergedEnemies,
       flag: flag || fallbackLevel.flag,
     };
+  },
+
+  mergeEditableEnemies(editableEnemies, fallbackEnemies) {
+    if (!editableEnemies.length) return fallbackEnemies;
+    const merged = editableEnemies.slice();
+    const hasType = (type) => merged.some((enemy) => enemy.type === type);
+    ["flower", "turtle"].forEach((type) => {
+      if (hasType(type)) return;
+      fallbackEnemies
+        .filter((enemy) => enemy.type === type)
+        .forEach((enemy) => merged.push(Object.assign({}, enemy)));
+    });
+    return merged;
   },
 
   nodeToWorldRect(root, node) {
