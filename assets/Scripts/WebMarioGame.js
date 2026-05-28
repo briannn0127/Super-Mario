@@ -1092,8 +1092,10 @@ cc.Class({
         return;
       }
       if (enemy.type !== "flower") {
+        const oldVx = enemy.vx || (enemy.type === "turtle" ? -48 : -65);
         this.moveBody(enemy, dt, false);
-        if (enemy.vx === 0) enemy.vx = enemy.type === "turtle" ? -48 : -65;
+        if (enemy.vx === 0) enemy.vx = -oldVx;
+        if (enemy.onGround && !this.hasGroundAhead(enemy)) enemy.vx = -enemy.vx;
       }
       if (!this.hit(this.player, enemy) || this.player.invincible > 0) return;
 
@@ -1138,6 +1140,18 @@ cc.Class({
         if (isPlayer && block.type === "question") this.useQuestion(block);
       }
     });
+  },
+
+  hasGroundAhead(body) {
+    const direction = body.vx >= 0 ? 1 : -1;
+    const footX = body.x + (direction > 0 ? body.w + 4 : -4);
+    const footY = body.y + body.h + 6;
+    return this.blocks.some((block) => (
+      footX >= block.x
+      && footX <= block.x + block.w
+      && footY >= block.y
+      && footY <= block.y + block.h + 12
+    ));
   },
 
   useQuestion(block) {
