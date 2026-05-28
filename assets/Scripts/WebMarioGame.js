@@ -1101,6 +1101,7 @@ cc.Class({
       if (stomp && enemy.type !== "flower") {
         enemy.alive = false;
         enemy.squash = 0.35;
+        enemy.hidden = true;
         this.player.vy = enemy.type === "turtle" ? -500 : -430;
         const points = enemy.type === "turtle" ? 400 : 200;
         this.score += points;
@@ -1403,7 +1404,7 @@ cc.Class({
     if (enemy.type === "flower") return this.frames.flowerFrames || (this.frames.flower ? [this.frames.flower] : []);
     if (enemy.type === "turtle") {
       const frames = this.frames.turtleFrames || (this.frames.turtle ? [this.frames.turtle] : []);
-      return frames.slice(0, Math.min(2, frames.length));
+      return frames.slice(2, Math.min(5, frames.length));
     }
     return this.frames.goombaFrames || (this.frames.goomba ? [this.frames.goomba] : []);
   },
