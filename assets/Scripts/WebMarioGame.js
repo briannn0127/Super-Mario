@@ -62,6 +62,7 @@ cc.Class({
       { id: "levels", x: 145, y: -36, w: 230, h: 58 },
     ];
 
+    this.applyResponsivePageFit();
     this.ensureSceneNodes();
     this.initFirebaseLeaderboard();
     this.loadAudio();
@@ -78,6 +79,9 @@ cc.Class({
     this.node.off(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
     if (this.leaderboardOverlay && this.leaderboardOverlay.parentNode) {
       this.leaderboardOverlay.parentNode.removeChild(this.leaderboardOverlay);
+    }
+    if (this.leaderboardOpenButton && this.leaderboardOpenButton.parentNode) {
+      this.leaderboardOpenButton.parentNode.removeChild(this.leaderboardOpenButton);
     }
   },
 
@@ -132,6 +136,39 @@ cc.Class({
     this.styleResultLabels();
     if (!this.audioSource) this.audioSource = this.node.addComponent(cc.AudioSource);
     this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
+  },
+
+  applyResponsivePageFit() {
+    if (typeof document === "undefined" || document.getElementById("web-mario-responsive-fit")) return;
+
+    const style = document.createElement("style");
+    style.id = "web-mario-responsive-fit";
+    style.textContent = `
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        margin: 0;
+        background: #000;
+      }
+      h1.header, .footer {
+        display: none !important;
+      }
+      #GameDiv {
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: #000 !important;
+        overflow: hidden !important;
+      }
+      #Cocos2dGameContainer {
+        overflow: hidden !important;
+      }
+    `;
+    document.head.appendChild(style);
   },
 
   makeSpriteNode(name, x, y, w, h) {
@@ -375,8 +412,33 @@ cc.Class({
         font-size: 13px;
         font-weight: 700;
       }
+      .wm-leaderboard-open {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 9998;
+        display: none;
+        min-width: 166px;
+        height: 44px;
+        border: 4px solid #1d3858;
+        background: linear-gradient(#fff48a, #ffb13b);
+        color: #1f405c;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 17px;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-shadow: 1px 1px 0 #fff;
+        box-shadow: 0 5px 0 #101d31, 0 10px 20px rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+      }
     `;
     document.head.appendChild(style);
+
+    const openButton = document.createElement("button");
+    openButton.className = "wm-leaderboard-open";
+    openButton.type = "button";
+    openButton.textContent = "LEADERBOARD";
+    document.body.appendChild(openButton);
 
     const overlay = document.createElement("div");
     overlay.className = "wm-leaderboard";
@@ -393,6 +455,7 @@ cc.Class({
     `;
     document.body.appendChild(overlay);
 
+    this.leaderboardOpenButton = openButton;
     this.leaderboardOverlay = overlay;
     this.leaderboardScoreText = overlay.querySelector(".wm-score");
     this.leaderboardForm = overlay.querySelector("form");
@@ -406,33 +469,48 @@ cc.Class({
       overlay.addEventListener(type, (event) => event.stopPropagation());
     });
     overlay.addEventListener("click", (event) => event.stopPropagation());
+    openButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      this.showLeaderboardOverlay(true);
+    });
     this.leaderboardForm.addEventListener("submit", (event) => {
       event.preventDefault();
       this.submitLeaderboardScore();
     });
     this.leaderboardCloseButton.addEventListener("click", () => {
+      const shouldReturnMenu = !this.leaderboardViewOnly;
       this.hideLeaderboardOverlay();
-      this.showMenu();
+      if (shouldReturnMenu) this.showMenu();
     });
   },
 
-  showLeaderboardOverlay() {
-    if (!this.leaderboardOverlay || this.leaderboardShownForState === this.state) return;
+  showLeaderboardOverlay(viewOnly) {
+    if (!this.leaderboardOverlay || (!viewOnly && this.leaderboardShownForState === this.state)) return;
     this.leaderboardShownForState = this.state;
     this.leaderboardSubmitted = false;
+    this.leaderboardViewOnly = !!viewOnly;
     this.leaderboardOverlay.style.display = "block";
-    this.leaderboardScoreText.textContent = `SCORE ${String(this.score).padStart(6, "0")}`;
+    this.showLeaderboardLauncher(false);
+    this.leaderboardScoreText.textContent = viewOnly ? "TOP 10 SCORES" : `SCORE ${String(this.score).padStart(6, "0")}`;
     this.leaderboardStatus.textContent = "";
-    this.leaderboardSubmitButton.disabled = false;
-    this.leaderboardInput.disabled = false;
+    this.leaderboardForm.style.display = viewOnly ? "none" : "grid";
+    this.leaderboardCloseButton.textContent = viewOnly ? "CLOSE" : "RETURN TO MENU";
+    this.leaderboardSubmitButton.disabled = !!viewOnly;
+    this.leaderboardInput.disabled = !!viewOnly;
     this.leaderboardInput.value = localStorage.getItem("webMarioPlayerName") || "";
     this.refreshLeaderboard();
-    setTimeout(() => this.leaderboardInput.focus(), 0);
+    if (!viewOnly) setTimeout(() => this.leaderboardInput.focus(), 0);
   },
 
   hideLeaderboardOverlay() {
     if (this.leaderboardOverlay) this.leaderboardOverlay.style.display = "none";
     this.leaderboardShownForState = "";
+    this.showLeaderboardLauncher(this.state === "menu" || this.state === "levels");
+  },
+
+  showLeaderboardLauncher(visible) {
+    if (!this.leaderboardOpenButton) return;
+    this.leaderboardOpenButton.style.display = visible ? "block" : "none";
   },
 
   submitLeaderboardScore() {
