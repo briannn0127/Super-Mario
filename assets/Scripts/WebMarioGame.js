@@ -94,11 +94,15 @@ cc.Class({
     if (!this.webMarioLabel) this.webMarioLabel = this.makeLabel("WebMarioTitle", 0, 138, 70);
     if (!this.courseLabel) this.courseLabel = this.makeLabel("CourseTitle", 0, 88, 24);
     if (!this.infoLabel) this.infoLabel = this.makeLabel("Info", 28, 140, 24);
+    if (!this.resultTitleLabel) this.resultTitleLabel = this.makeLabel("ResultTitle", 0, 56, 34);
+    if (!this.resultScoreLabel) this.resultScoreLabel = this.makeLabel("ResultScore", 0, 10, 23);
+    if (!this.resultHintLabel) this.resultHintLabel = this.makeLabel("ResultHint", 0, -40, 20);
     if (!this.hudLabel) this.hudLabel = this.makeLabel("HUD", 0, 245, 24);
     if (!this.startLabel) this.startLabel = this.makeLabel("StartLabel", -145, -46, 25);
     if (!this.levelLabel) this.levelLabel = this.makeLabel("LevelLabel", 145, -46, 25);
     this.ensureHudLabels();
     this.styleMenuTitleLabels();
+    this.styleResultLabels();
     if (!this.audioSource) this.audioSource = this.node.addComponent(cc.AudioSource);
     this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
   },
@@ -180,6 +184,19 @@ cc.Class({
     outline(this.courseLabel, new cc.Color(38, 64, 86), 3);
     outline(this.startLabel, new cc.Color(255, 255, 255), 2);
     outline(this.levelLabel, new cc.Color(255, 255, 255), 2);
+  },
+
+  styleResultLabels() {
+    const labels = [this.resultTitleLabel, this.resultScoreLabel, this.resultHintLabel];
+    labels.forEach((label) => {
+      if (!label) return;
+      label.node.color = new cc.Color(38, 64, 86);
+      let outline = label.node.getComponent(cc.LabelOutline);
+      if (!outline) outline = label.node.addComponent(cc.LabelOutline);
+      outline.color = new cc.Color(255, 255, 255);
+      outline.width = 2;
+      label.node.active = false;
+    });
   },
 
   loadAudio() {
@@ -324,6 +341,7 @@ cc.Class({
   showMenu() {
     this.state = "menu";
     this.message = "";
+    this.resultBonus = 0;
     this.titleLabel.string = "Web Mario";
     this.showMenuImages(true);
     this.titleSprite.node.active = false;
@@ -343,6 +361,7 @@ cc.Class({
     this.flagSprite.node.active = false;
     this.hudPanelSprite.node.active = false;
     this.messagePanelSprite.node.active = false;
+    this.hideResultLabels();
     this.hideHudIcons();
     this.hideHudLabels();
     this.hideBlockSprites();
@@ -360,6 +379,7 @@ cc.Class({
     this.courseLabel.lineHeight = 32;
     this.courseLabel.string = "WORLD 1 ADVENTURE";
     this.infoLabel.node.setPosition(0, -126);
+    this.infoLabel.node.color = cc.Color.WHITE;
     this.infoLabel.fontSize = 22;
     this.infoLabel.lineHeight = 30;
     this.infoLabel.string = "A/D Move    W/Space Jump    P Pause";
@@ -447,6 +467,7 @@ cc.Class({
 
   showLevelSelect() {
     this.state = "levels";
+    this.resultBonus = 0;
     this.titleLabel.string = "Level Select";
     this.showMenuImages(true);
     this.titleSprite.node.active = false;
@@ -470,6 +491,7 @@ cc.Class({
     this.flagSprite.node.active = false;
     this.hudPanelSprite.node.active = false;
     this.messagePanelSprite.node.active = false;
+    this.hideResultLabels();
     this.hideHudIcons();
     this.hideHudLabels();
     this.hideBlockSprites();
@@ -477,6 +499,7 @@ cc.Class({
     this.titleLabel.node.setPosition(0, 154);
     this.titleLabel.fontSize = 56;
     this.infoLabel.node.setPosition(0, -136);
+    this.infoLabel.node.color = cc.Color.WHITE;
     this.infoLabel.fontSize = 24;
     this.infoLabel.lineHeight = 34;
     this.infoLabel.string = "1: World 1-1      2: World 1-2      ESC: Back";
@@ -514,6 +537,7 @@ cc.Class({
     this.score = 0;
     this.lives = 3;
     this.timer = 120;
+    this.resultBonus = 0;
     this.message = "";
     this.state = "playing";
     this.showMenuImages(false);
@@ -527,6 +551,7 @@ cc.Class({
     this.hudPanelSprite.node.setPosition(0, 246);
     this.hudPanelSprite.node.setContentSize(760, 58);
     this.messagePanelSprite.node.active = false;
+    this.hideResultLabels();
     this.titleLabel.node.active = true;
     this.superLabel.node.active = false;
     this.webMarioLabel.node.active = false;
@@ -632,6 +657,12 @@ cc.Class({
   hideHudLabels() {
     Object.keys(this.hudLabels).forEach((key) => {
       this.hudLabels[key].node.active = false;
+    });
+  },
+
+  hideResultLabels() {
+    [this.resultTitleLabel, this.resultScoreLabel, this.resultHintLabel].forEach((label) => {
+      if (label) label.node.active = false;
     });
   },
 
@@ -976,7 +1007,8 @@ cc.Class({
     this.playOneShot(this.hurtClip);
     if (this.lives <= 0) {
       this.state = "over";
-      this.message = "GAME OVER\nENTER: Menu";
+      this.resultBonus = 0;
+      this.message = "GAME OVER";
       if (this.audioSource) this.audioSource.stop();
       this.playOneShot(this.gameOverClip);
       return;
@@ -990,8 +1022,9 @@ cc.Class({
 
   levelClear() {
     this.state = "clear";
-    this.score += Math.max(0, Math.ceil(this.timer)) * 10;
-    this.message = "LEVEL CLEAR\nENTER: Menu";
+    this.resultBonus = Math.max(0, Math.ceil(this.timer)) * 10;
+    this.score += this.resultBonus;
+    this.message = "COURSE CLEAR!";
     if (this.audioSource) this.audioSource.stop();
     this.playOneShot(this.clearClip);
   },
@@ -1016,6 +1049,7 @@ cc.Class({
       this.flagSprite.node.active = false;
       this.hudPanelSprite.node.active = false;
       this.messagePanelSprite.node.active = false;
+      this.hideResultLabels();
       this.hideHudLabels();
       return;
     }
@@ -1027,6 +1061,7 @@ cc.Class({
       this.flagSprite.node.active = false;
       this.hudPanelSprite.node.active = false;
       this.messagePanelSprite.node.active = false;
+      this.hideResultLabels();
       this.hideHudLabels();
       return;
     }
@@ -1037,14 +1072,54 @@ cc.Class({
     this.syncGameSprites();
     this.syncFlagSprite();
 
+    if (this.state === "clear" || this.state === "over") {
+      this.showResultOverlay();
+      return;
+    }
+
+    this.hideResultLabels();
     if (this.state === "paused") this.message = "PAUSED";
     const showMessage = !!this.message;
     this.messagePanelSprite.node.active = showMessage && !!this.frames.textArea;
+    if (showMessage) {
+      this.messagePanelSprite.node.setPosition(0, 8);
+      this.messagePanelSprite.node.setContentSize(360, 100);
+    }
     this.infoLabel.node.active = showMessage;
+    this.infoLabel.node.color = new cc.Color(38, 64, 86);
     this.infoLabel.node.setPosition(0, this.state === "paused" ? 8 : -18);
     this.infoLabel.fontSize = this.state === "playing" ? 24 : 30;
     this.infoLabel.lineHeight = this.infoLabel.fontSize + 8;
     this.infoLabel.string = this.message;
+  },
+
+  showResultOverlay() {
+    const cleared = this.state === "clear";
+    this.messagePanelSprite.node.active = !!this.frames.textArea;
+    this.messagePanelSprite.node.setPosition(0, 8);
+    this.messagePanelSprite.node.setContentSize(610, 184);
+    this.infoLabel.node.active = false;
+
+    this.resultTitleLabel.node.active = true;
+    this.resultScoreLabel.node.active = true;
+    this.resultHintLabel.node.active = true;
+
+    this.resultTitleLabel.node.setPosition(0, 62);
+    this.resultScoreLabel.node.setPosition(0, 8);
+    this.resultHintLabel.node.setPosition(0, -46);
+
+    this.resultTitleLabel.fontSize = cleared ? 34 : 38;
+    this.resultTitleLabel.lineHeight = this.resultTitleLabel.fontSize + 8;
+    this.resultScoreLabel.fontSize = 23;
+    this.resultScoreLabel.lineHeight = 30;
+    this.resultHintLabel.fontSize = 20;
+    this.resultHintLabel.lineHeight = 28;
+
+    this.resultTitleLabel.string = cleared ? "COURSE CLEAR!" : "GAME OVER";
+    this.resultScoreLabel.string = cleared
+      ? `SCORE ${String(this.score).padStart(6, "0")}   TIME BONUS ${String(this.resultBonus || 0).padStart(4, "0")}`
+      : `FINAL SCORE ${String(this.score).padStart(6, "0")}`;
+    this.resultHintLabel.string = "PRESS ENTER TO RETURN TO MENU";
   },
 
   syncGameSprites() {
