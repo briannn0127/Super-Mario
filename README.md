@@ -33,6 +33,7 @@ Open `C:\HTML5\Assignment02` with Cocos Creator 2.4.8, the normal 2D Creator edi
 - Sound Effects (10%): looping BGM, jump, hurt/die, stomp, coin, mushroom power up, level clear, game over; one-shot SFX do not stop BGM
 - UI (10%): life, score, world, timer, HUD icons from provided assets
 - Appearance (10%): provided title/menu/button/tile/player/enemy/flag/UI image assets, terrain tiles, pipe tiles, wall tiles, decorative hills/bushes/clouds, HUD icons, full menu/background art
+- Firebase Leaderboard: game clear / game over screen lets the player enter a name, submit the score to Firebase Realtime Database, and view the top 10 scores sorted by score.
 
 ## Assets
 
@@ -53,6 +54,7 @@ Most visible game objects are rendered from the provided assets through Cocos Sp
 - Asset-based parkour layout with pipes, walls, cloud platforms, gaps, stairs, elevated block routes, visible mushroom power-ups, and non-collision scenery details
 - Pause system
 - Invincibility blink after taking damage
+- Firebase Realtime Database leaderboard with graceful console-only error handling if the service cannot be reached
 
 ## Submission Notes
 

@@ -34,6 +34,18 @@ cc.Class({
     this.clearClip = null;
     this.gameOverClip = null;
     this.frames = {};
+    this.firebaseConfig = {
+      apiKey: "AIzaSyC_5epfchj-d3edVk_yo1UsCxsKSprjGTU",
+      authDomain: "supermario-777.firebaseapp.com",
+      databaseURL: "https://supermario-777-default-rtdb.firebaseio.com",
+      projectId: "supermario-777",
+      storageBucket: "supermario-777.firebasestorage.app",
+      messagingSenderId: "116385597417",
+      appId: "1:116385597417:web:c4a4655af58a82ce94ed78",
+    };
+    this.firebaseReady = false;
+    this.leaderboardShownForState = "";
+    this.leaderboardSubmitted = false;
     this.enemySprites = [];
     this.blockSprites = [];
     this.decorSprites = [];
@@ -51,6 +63,7 @@ cc.Class({
     ];
 
     this.ensureSceneNodes();
+    this.initFirebaseLeaderboard();
     this.loadAudio();
     this.loadImageAssets();
     this.showMenu();
@@ -63,6 +76,9 @@ cc.Class({
     cc.systemEvent.off(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
     cc.systemEvent.off(cc.SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
     this.node.off(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this);
+    if (this.leaderboardOverlay && this.leaderboardOverlay.parentNode) {
+      this.leaderboardOverlay.parentNode.removeChild(this.leaderboardOverlay);
+    }
   },
 
   update(dt) {
@@ -242,6 +258,256 @@ cc.Class({
     cc.resources.load("AS2_source/audio/Game Over2", cc.AudioClip, (_err, clip) => { this.gameOverAltClip = clip; });
     cc.resources.load("AS2_source/audio/bgm_2", cc.AudioClip, (_err, clip) => { this.bgm2Clip = clip; });
     cc.resources.load("AS2_source/audio/bgm_3", cc.AudioClip, (_err, clip) => { this.bgm3Clip = clip; });
+  },
+
+  initFirebaseLeaderboard() {
+    try {
+      this.firebaseDatabaseUrl = this.firebaseConfig.databaseURL.replace(/\/$/, "");
+      this.firebaseReady = typeof window !== "undefined" && typeof window.fetch === "function";
+      this.createLeaderboardOverlay();
+      this.refreshLeaderboard();
+    } catch (err) {
+      this.firebaseReady = false;
+      console.error("Firebase leaderboard initialization failed:", err);
+    }
+  },
+
+  createLeaderboardOverlay() {
+    if (typeof document === "undefined" || this.leaderboardOverlay) return;
+
+    const style = document.createElement("style");
+    style.textContent = `
+      .wm-leaderboard {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: min(420px, calc(100vw - 32px));
+        z-index: 9999;
+        display: none;
+        color: #1f405c;
+        font-family: Arial, Helvetica, sans-serif;
+        text-align: center;
+        background: linear-gradient(#fffdf4, #dff6ff);
+        border: 4px solid #1d3858;
+        box-shadow: 0 8px 0 #101d31, 0 18px 30px rgba(0, 0, 0, 0.35);
+        padding: 16px 18px 18px;
+      }
+      .wm-leaderboard h2 {
+        margin: 0 0 10px;
+        color: #ff4438;
+        font-size: 30px;
+        line-height: 1;
+        text-shadow: 3px 3px 0 #24466e;
+        letter-spacing: 0;
+      }
+      .wm-leaderboard .wm-score {
+        margin: 0 0 12px;
+        font-weight: 700;
+        font-size: 18px;
+      }
+      .wm-leaderboard form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .wm-leaderboard input {
+        min-width: 0;
+        height: 38px;
+        box-sizing: border-box;
+        border: 3px solid #24466e;
+        padding: 0 10px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f405c;
+        background: #ffffff;
+        outline: none;
+      }
+      .wm-leaderboard button {
+        height: 38px;
+        border: 3px solid #1d3858;
+        background: #ffb13b;
+        color: #1f405c;
+        font-weight: 800;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .wm-leaderboard button:disabled {
+        opacity: 0.65;
+        cursor: default;
+      }
+      .wm-leaderboard ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 4px;
+      }
+      .wm-leaderboard li {
+        display: grid;
+        grid-template-columns: 32px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        min-height: 28px;
+        padding: 3px 8px;
+        background: rgba(255, 255, 255, 0.76);
+        border: 2px solid rgba(36, 70, 110, 0.35);
+        font-weight: 700;
+      }
+      .wm-leaderboard .wm-rank {
+        color: #ff4438;
+      }
+      .wm-leaderboard .wm-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
+      }
+      .wm-leaderboard .wm-close {
+        margin-top: 12px;
+        width: 100%;
+        background: #6ad8ff;
+      }
+      .wm-leaderboard .wm-status {
+        min-height: 20px;
+        margin: 6px 0;
+        font-size: 13px;
+        font-weight: 700;
+      }
+    `;
+    document.head.appendChild(style);
+
+    const overlay = document.createElement("div");
+    overlay.className = "wm-leaderboard";
+    overlay.innerHTML = `
+      <h2>LEADERBOARD</h2>
+      <p class="wm-score">SCORE 000000</p>
+      <form>
+        <input maxlength="16" placeholder="YOUR NAME" autocomplete="off" />
+        <button type="submit">SUBMIT</button>
+      </form>
+      <div class="wm-status"></div>
+      <ol></ol>
+      <button class="wm-close" type="button">RETURN TO MENU</button>
+    `;
+    document.body.appendChild(overlay);
+
+    this.leaderboardOverlay = overlay;
+    this.leaderboardScoreText = overlay.querySelector(".wm-score");
+    this.leaderboardForm = overlay.querySelector("form");
+    this.leaderboardInput = overlay.querySelector("input");
+    this.leaderboardSubmitButton = overlay.querySelector("button[type='submit']");
+    this.leaderboardStatus = overlay.querySelector(".wm-status");
+    this.leaderboardList = overlay.querySelector("ol");
+    this.leaderboardCloseButton = overlay.querySelector(".wm-close");
+
+    ["keydown", "keyup", "keypress"].forEach((type) => {
+      overlay.addEventListener(type, (event) => event.stopPropagation());
+    });
+    overlay.addEventListener("click", (event) => event.stopPropagation());
+    this.leaderboardForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      this.submitLeaderboardScore();
+    });
+    this.leaderboardCloseButton.addEventListener("click", () => {
+      this.hideLeaderboardOverlay();
+      this.showMenu();
+    });
+  },
+
+  showLeaderboardOverlay() {
+    if (!this.leaderboardOverlay || this.leaderboardShownForState === this.state) return;
+    this.leaderboardShownForState = this.state;
+    this.leaderboardSubmitted = false;
+    this.leaderboardOverlay.style.display = "block";
+    this.leaderboardScoreText.textContent = `SCORE ${String(this.score).padStart(6, "0")}`;
+    this.leaderboardStatus.textContent = "";
+    this.leaderboardSubmitButton.disabled = false;
+    this.leaderboardInput.disabled = false;
+    this.leaderboardInput.value = localStorage.getItem("webMarioPlayerName") || "";
+    this.refreshLeaderboard();
+    setTimeout(() => this.leaderboardInput.focus(), 0);
+  },
+
+  hideLeaderboardOverlay() {
+    if (this.leaderboardOverlay) this.leaderboardOverlay.style.display = "none";
+    this.leaderboardShownForState = "";
+  },
+
+  submitLeaderboardScore() {
+    if (!this.firebaseReady) {
+      console.error("Firebase leaderboard is not available.");
+      return;
+    }
+    const name = (this.leaderboardInput.value || "PLAYER").trim().slice(0, 16) || "PLAYER";
+    localStorage.setItem("webMarioPlayerName", name);
+    this.leaderboardSubmitButton.disabled = true;
+    this.leaderboardInput.disabled = true;
+    this.leaderboardStatus.textContent = "SENDING...";
+    this.postLeaderboardScore(name, this.score)
+      .then(() => {
+        this.leaderboardSubmitted = true;
+        this.leaderboardStatus.textContent = "SCORE SENT!";
+        return this.refreshLeaderboard();
+      })
+      .catch((err) => {
+        console.error("Firebase leaderboard submit failed:", err);
+        this.leaderboardSubmitButton.disabled = false;
+        this.leaderboardInput.disabled = false;
+        this.leaderboardStatus.textContent = "SUBMIT FAILED";
+      });
+  },
+
+  postLeaderboardScore(name, score) {
+    return fetch(`${this.firebaseDatabaseUrl}/leaderboard.json`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        score: Number(score) || 0,
+        createdAt: { ".sv": "timestamp" },
+      }),
+    }).then((response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    });
+  },
+
+  refreshLeaderboard() {
+    if (!this.firebaseReady || !this.leaderboardList) return Promise.resolve();
+    const url = `${this.firebaseDatabaseUrl}/leaderboard.json?orderBy=%22score%22&limitToLast=10`;
+    return fetch(url)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((data) => {
+        const rows = Object.keys(data || {})
+          .map((key) => Object.assign({ key }, data[key]))
+          .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0))
+          .slice(0, 10);
+        this.renderLeaderboardRows(rows);
+      })
+      .catch((err) => {
+        console.error("Firebase leaderboard load failed:", err);
+      });
+  },
+
+  renderLeaderboardRows(rows) {
+    this.leaderboardList.innerHTML = "";
+    if (!rows.length) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="wm-rank">--</span><span class="wm-name">NO SCORES YET</span><span>0</span>`;
+      this.leaderboardList.appendChild(li);
+      return;
+    }
+    rows.forEach((row, index) => {
+      const li = document.createElement("li");
+      const name = String(row.name || "PLAYER").replace(/[<>&]/g, "");
+      li.innerHTML = `<span class="wm-rank">${index + 1}</span><span class="wm-name">${name}</span><span>${Number(row.score) || 0}</span>`;
+      this.leaderboardList.appendChild(li);
+    });
   },
 
   loadImageAssets() {
@@ -455,6 +721,7 @@ cc.Class({
     this.state = "menu";
     this.message = "";
     this.resultBonus = 0;
+    this.hideLeaderboardOverlay();
     this.hideEditableLevelPrefabs();
     this.titleLabel.string = "Web Mario";
     this.showMenuImages(true);
@@ -590,6 +857,7 @@ cc.Class({
   showLevelSelect() {
     this.state = "levels";
     this.resultBonus = 0;
+    this.hideLeaderboardOverlay();
     this.hideEditableLevelPrefabs();
     this.playOneShot(this.reserveClip);
     this.titleLabel.string = "Level Select";
@@ -675,6 +943,7 @@ cc.Class({
     this.resultBonus = 0;
     this.message = "";
     this.state = "playing";
+    this.hideLeaderboardOverlay();
     this.showMenuImages(false);
     this.menuArrowSprite.node.active = false;
     this.menuBgSprite.node.active = true;
@@ -1029,6 +1298,8 @@ cc.Class({
   },
 
   handleHotkeys() {
+    if (this.leaderboardOverlay && this.leaderboardOverlay.style.display === "block") return;
+
     if (this.state === "menu") {
       if (this.consume(cc.macro.KEY.enter)) this.startGame(0);
       if (this.consume(cc.macro.KEY.l)) this.showLevelSelect();
@@ -1373,7 +1644,8 @@ cc.Class({
     this.resultScoreLabel.string = cleared
       ? `SCORE ${String(this.score).padStart(6, "0")}   TIME BONUS ${String(this.resultBonus || 0).padStart(4, "0")}`
       : `FINAL SCORE ${String(this.score).padStart(6, "0")}`;
-    this.resultHintLabel.string = "PRESS ENTER TO RETURN TO MENU";
+    this.resultHintLabel.string = "ENTER YOUR NAME TO SAVE SCORE";
+    this.showLeaderboardOverlay();
   },
 
   syncGameSprites() {
