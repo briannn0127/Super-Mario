@@ -26,6 +26,10 @@ cc.Class({
     this.stompClip = null;
     this.hurtClip = null;
     this.powerClip = null;
+    this.powerAppearClip = null;
+    this.powerDownClip = null;
+    this.reserveClip = null;
+    this.kickClip = null;
     this.coinClip = null;
     this.clearClip = null;
     this.gameOverClip = null;
@@ -34,6 +38,10 @@ cc.Class({
     this.blockSprites = [];
     this.decorSprites = [];
     this.powerupSprites = [];
+    this.effectSprites = [];
+    this.scoreSprites = [];
+    this.effects = [];
+    this.scorePopups = [];
     this.useTileSprites = true;
     this.hudIconSprites = [];
     this.hudLabels = {};
@@ -83,9 +91,12 @@ cc.Class({
     if (!this.playerSprite) this.playerSprite = this.makeSpriteNode("MarioSprite", 0, 0, 36, 42);
     if (!this.menuMarioSprite) this.menuMarioSprite = this.makeSpriteNode("MenuMario", -330, -142, 48, 48);
     if (!this.menuGoombaSprite) this.menuGoombaSprite = this.makeSpriteNode("MenuGoomba", 326, -152, 48, 48);
+    if (!this.menuArrowSprite) this.menuArrowSprite = this.makeSpriteNode("MenuArrow", -288, -38, 30, 35);
     if (!this.flagSprite) this.flagSprite = this.makeSpriteNode("FlagSprite", 0, 0, 58, 220);
     if (!this.hudPanelSprite) this.hudPanelSprite = this.makeSpriteNode("HudPanel", 0, 245, 760, 58);
     if (!this.messagePanelSprite) this.messagePanelSprite = this.makeSpriteNode("MessagePanel", 0, 0, 520, 130);
+    if (!this.pauseSprite) this.pauseSprite = this.makeSpriteNode("PauseImage", 0, 12, 360, 190);
+    if (!this.multipleIcon) this.multipleIcon = this.makeSpriteNode("MultipleIcon", -302, 248, 20, 22);
     if (!this.lifeIcon) this.lifeIcon = this.makeSpriteNode("LifeIcon", -350, 248, 39, 21);
     if (!this.worldIcon) this.worldIcon = this.makeSpriteNode("WorldIcon", 132, 248, 86, 16);
     if (!this.timerIcon) this.timerIcon = this.makeSpriteNode("TimerIcon", 310, 248, 28, 32);
@@ -122,14 +133,16 @@ cc.Class({
     if (name === "MenuBackground") return -40;
     if (name === "TitleImage" || name.indexOf("Button") >= 0) return 20;
     if (name === "HudPanel") return 25;
-    if (name === "MessagePanel") return 28;
+    if (name === "MessagePanel" || name === "PauseImage") return 28;
+    if (name.indexOf("ScoreSprite") === 0) return 18;
+    if (name.indexOf("EffectSprite") === 0) return 12;
     if (name.indexOf("DecorSprite") === 0) return -8;
     if (name.indexOf("TileSprite") === 0) return 0;
     if (name === "FlagSprite") return 4;
     if (name.indexOf("PowerUpSprite") === 0) return 6;
     if (name.indexOf("GoombaSprite") === 0 || name === "MenuGoomba") return 8;
     if (name === "MarioSprite" || name === "MenuMario") return 10;
-    if (name.indexOf("Icon") >= 0) return 30;
+    if (name.indexOf("Icon") >= 0 || name === "MenuArrow") return 30;
     return 1;
   },
 
@@ -219,9 +232,16 @@ cc.Class({
     cc.resources.load("AS2_source/audio/stomp", cc.AudioClip, (_err, clip) => { this.stompClip = clip; });
     cc.resources.load("AS2_source/audio/loseOneLife", cc.AudioClip, (_err, clip) => { this.hurtClip = clip; });
     cc.resources.load("AS2_source/audio/PowerUp", cc.AudioClip, (_err, clip) => { this.powerClip = clip; });
+    cc.resources.load("AS2_source/audio/powerUpAppear", cc.AudioClip, (_err, clip) => { this.powerAppearClip = clip; });
+    cc.resources.load("AS2_source/audio/powerDown", cc.AudioClip, (_err, clip) => { this.powerDownClip = clip; });
+    cc.resources.load("AS2_source/audio/reserve", cc.AudioClip, (_err, clip) => { this.reserveClip = clip; });
+    cc.resources.load("AS2_source/audio/kick", cc.AudioClip, (_err, clip) => { this.kickClip = clip; });
     cc.resources.load("AS2_source/audio/coin", cc.AudioClip, (_err, clip) => { this.coinClip = clip; });
     cc.resources.load("AS2_source/audio/levelClear", cc.AudioClip, (_err, clip) => { this.clearClip = clip; });
     cc.resources.load("AS2_source/audio/Game Over", cc.AudioClip, (_err, clip) => { this.gameOverClip = clip; });
+    cc.resources.load("AS2_source/audio/Game Over2", cc.AudioClip, (_err, clip) => { this.gameOverAltClip = clip; });
+    cc.resources.load("AS2_source/audio/bgm_2", cc.AudioClip, (_err, clip) => { this.bgm2Clip = clip; });
+    cc.resources.load("AS2_source/audio/bgm_3", cc.AudioClip, (_err, clip) => { this.bgm3Clip = clip; });
   },
 
   loadImageAssets() {
@@ -238,16 +258,47 @@ cc.Class({
       this.frames.buttonBlue = frame;
       this.blueButtonSprite.spriteFrame = frame;
     });
+    this.loadSpriteFrame("AS2_source/pictures/button_blue_hover", (frame) => { this.frames.buttonBlueHover = frame; });
+    this.loadSpriteFrame("AS2_source/pictures/button_blue_press", (frame) => { this.frames.buttonBluePress = frame; });
     this.loadSpriteFrame("AS2_source/pictures/button_orange", (frame) => {
       this.frames.buttonOrange = frame;
       this.orangeButtonSprite.spriteFrame = frame;
     });
+    this.loadSpriteFrame("AS2_source/pictures/button_orange_hover", (frame) => { this.frames.buttonOrangeHover = frame; });
+    this.loadSpriteFrame("AS2_source/pictures/button_oriange_press", (frame) => { this.frames.buttonOrangePress = frame; });
+    this.loadSpriteFrame("AS2_source/pictures/button_gray", (frame) => { this.frames.buttonGray = frame; });
+    this.loadSpriteFrame("AS2_source/pictures/arrow", (frame) => {
+      this.frames.arrow = frame;
+      this.menuArrowSprite.spriteFrame = frame;
+      this.menuArrowSprite.node.active = false;
+    });
+    this.loadSpriteFrame("AS2_source/pictures/multiple", (frame) => {
+      this.frames.multiple = frame;
+      this.multipleIcon.spriteFrame = frame;
+      this.multipleIcon.node.active = false;
+    });
+    this.loadSpriteFrame("AS2_source/pictures/pause", (frame) => {
+      this.frames.pause = frame;
+      this.pauseSprite.spriteFrame = frame;
+      this.pauseSprite.node.active = false;
+    });
+    this.loadSpriteFrame("AS2_source/pictures/smoke", (frame) => { this.frames.smoke = frame; });
     this.loadSpriteFrame("AS2_source/pictures/text_area_0", (frame) => {
       this.frames.textArea = frame;
       this.hudPanelSprite.spriteFrame = frame;
       this.messagePanelSprite.spriteFrame = frame;
       this.hudPanelSprite.node.active = false;
       this.messagePanelSprite.node.active = false;
+    });
+    this.loadSpriteFrame("AS2_source/pictures/text_area_1", (frame) => { this.frames.textAreaLarge = frame; });
+    this.loadSpriteFrame("AS2_source/pictures/title_1", (frame) => { this.frames.titleAlt = frame; });
+    this.loadBitmapFont("AS2_source/fonts/white_font", (font) => {
+      this.frames.whiteFont = font;
+      this.applyBitmapFonts();
+    });
+    this.loadBitmapFont("AS2_source/fonts/yellow_font", (font) => {
+      this.frames.yellowFont = font;
+      this.applyBitmapFonts();
     });
     this.loadSpriteAtlas("AS2_source/player/mario_small", (atlas) => {
       const frames = this.collectAtlasFrames(atlas, "mario_small", 36);
@@ -276,6 +327,12 @@ cc.Class({
       const frames = this.collectAtlasFrames(atlas, "flower", 2);
       this.frames.flowerFrames = frames;
       this.frames.flower = frames[0];
+    });
+    this.loadGridFrames("AS2_source/others/mario_fire", 17, 4, 38, 44, 36, (frames) => {
+      this.frames.marioFireFrames = frames;
+    });
+    this.loadGridFrames("AS2_source/others/mario_Tanuki", 7, 3, 40, 42, 18, (frames) => {
+      this.frames.marioTanukiFrames = frames;
     });
     this.loadSpriteFrame("AS2_source/pictures/flag", (frame) => {
       this.frames.flag = frame;
@@ -309,6 +366,16 @@ cc.Class({
       this.frames.grassTile = atlas.getSpriteFrame("tiles_10") || atlas.getSpriteFrame("tiles_227");
       this.frames.edgeTile = null;
     });
+    this.loadSpriteAtlas("AS2_source/effects_UI_tiles/effects", (atlas) => {
+      this.frames.effectFrames = this.collectAtlasFrames(atlas, "effects", 4);
+    });
+    this.loadSpriteAtlas("AS2_source/effects_UI_tiles/score", (atlas) => {
+      this.frames.scoreFrames = [];
+      for (let i = 1; i <= 8; i += 1) {
+        const frame = atlas.getSpriteFrame(String(i)) || atlas.getSpriteFrame(`${i}.png`);
+        if (frame) this.frames.scoreFrames.push(frame);
+      }
+    });
     this.loadSpriteAtlas("AS2_source/effects_UI_tiles/items", (atlas) => {
       this.frames.mushroom = atlas.getSpriteFrame("items_46");
       this.frames.coin = atlas.getSpriteFrame("items_37");
@@ -328,6 +395,36 @@ cc.Class({
   loadSpriteAtlas(path, callback) {
     cc.resources.load(path, cc.SpriteAtlas, (err, atlas) => {
       if (!err && atlas) callback(atlas);
+    });
+  },
+
+  loadBitmapFont(path, callback) {
+    cc.resources.load(path, cc.BitmapFont, (err, font) => {
+      if (!err && font) callback(font);
+    });
+  },
+
+  loadGridFrames(path, cols, rows, frameW, frameH, maxFrames, callback) {
+    cc.resources.load(path, cc.Texture2D, (err, texture) => {
+      if (err || !texture) return;
+      const frames = [];
+      for (let row = 0; row < rows; row += 1) {
+        for (let col = 0; col < cols; col += 1) {
+          if (frames.length >= maxFrames) break;
+          frames.push(new cc.SpriteFrame(texture, cc.rect(col * frameW, row * frameH, frameW, frameH)));
+        }
+      }
+      callback(frames);
+    });
+  },
+
+  applyBitmapFonts() {
+    [this.superLabel, this.webMarioLabel, this.courseLabel, this.infoLabel, this.startLabel, this.levelLabel,
+      this.resultTitleLabel, this.resultScoreLabel, this.resultHintLabel].forEach((label) => {
+      if (label) label.font = null;
+    });
+    Object.keys(this.hudLabels).forEach((key) => {
+      this.hudLabels[key].font = null;
     });
   },
 
@@ -374,15 +471,19 @@ cc.Class({
     this.orangeButtonSprite.node.active = true;
     this.menuMarioSprite.node.active = true;
     this.menuGoombaSprite.node.active = true;
+    this.menuArrowSprite.node.active = true;
     this.playerSprite.node.active = false;
     this.flagSprite.node.active = false;
     this.hudPanelSprite.node.active = false;
     this.messagePanelSprite.node.active = false;
+    this.pauseSprite.node.active = false;
     this.hideResultLabels();
     this.hideHudIcons();
     this.hideHudLabels();
     this.hideBlockSprites();
     this.hideEnemySprites();
+    this.hideEffectSprites();
+    this.hideScoreSprites();
     this.superLabel.node.setPosition(0, 188);
     this.superLabel.fontSize = 34;
     this.superLabel.lineHeight = 42;
@@ -402,6 +503,8 @@ cc.Class({
     this.infoLabel.string = "A/D Move    W/Space Jump    P Pause";
     this.blueButtonSprite.node.setPosition(-145, -36);
     this.orangeButtonSprite.node.setPosition(145, -36);
+    this.blueButtonSprite.spriteFrame = this.frames.buttonBlueHover || this.frames.buttonBlue || this.blueButtonSprite.spriteFrame;
+    this.orangeButtonSprite.spriteFrame = this.frames.buttonOrange || this.orangeButtonSprite.spriteFrame;
     this.blueButtonSprite.node.setContentSize(230, 58);
     this.orangeButtonSprite.node.setContentSize(230, 58);
     this.startLabel.node.active = true;
@@ -414,6 +517,8 @@ cc.Class({
     this.levelLabel.lineHeight = 28;
     this.startLabel.string = "START GAME";
     this.levelLabel.string = "LEVEL SELECT";
+    this.menuArrowSprite.node.setPosition(-288, -38);
+    this.menuArrowSprite.node.setContentSize(24, 28);
     this.applyEditableMenuLayout();
     this.hudLabel.string = "";
   },
@@ -486,6 +591,7 @@ cc.Class({
     this.state = "levels";
     this.resultBonus = 0;
     this.hideEditableLevelPrefabs();
+    this.playOneShot(this.reserveClip);
     this.titleLabel.string = "Level Select";
     this.showMenuImages(true);
     this.titleSprite.node.active = false;
@@ -501,19 +607,25 @@ cc.Class({
     this.orangeButtonSprite.node.active = true;
     this.blueButtonSprite.node.setPosition(-150, 10);
     this.orangeButtonSprite.node.setPosition(150, 10);
+    this.blueButtonSprite.spriteFrame = this.frames.buttonBlue || this.blueButtonSprite.spriteFrame;
+    this.orangeButtonSprite.spriteFrame = this.frames.buttonOrangeHover || this.frames.buttonOrange || this.orangeButtonSprite.spriteFrame;
     this.blueButtonSprite.node.setContentSize(250, 72);
     this.orangeButtonSprite.node.setContentSize(250, 72);
     this.menuMarioSprite.node.active = false;
     this.menuGoombaSprite.node.active = false;
+    this.menuArrowSprite.node.active = true;
     this.playerSprite.node.active = false;
     this.flagSprite.node.active = false;
     this.hudPanelSprite.node.active = false;
     this.messagePanelSprite.node.active = false;
+    this.pauseSprite.node.active = false;
     this.hideResultLabels();
     this.hideHudIcons();
     this.hideHudLabels();
     this.hideBlockSprites();
     this.hideEnemySprites();
+    this.hideEffectSprites();
+    this.hideScoreSprites();
     this.titleLabel.node.setPosition(0, 154);
     this.titleLabel.fontSize = 56;
     this.infoLabel.node.setPosition(0, -136);
@@ -527,6 +639,8 @@ cc.Class({
     this.levelLabel.node.setPosition(150, 0);
     this.startLabel.string = "WORLD 1-1";
     this.levelLabel.string = "WORLD 1-2";
+    this.menuArrowSprite.node.setPosition(-292, 0);
+    this.menuArrowSprite.node.setContentSize(24, 28);
     this.hudLabel.string = "";
   },
 
@@ -540,6 +654,8 @@ cc.Class({
     this.blocks = this.level.blocks.map((block) => Object.assign({}, block));
     this.decorations = (this.level.decorations || []).map((item) => Object.assign({}, item));
     this.powerups = [];
+    this.effects = [];
+    this.scorePopups = [];
     this.enemies = this.level.enemies.map((enemy) => ({
       x: enemy.x,
       y: enemy.y,
@@ -560,6 +676,7 @@ cc.Class({
     this.message = "";
     this.state = "playing";
     this.showMenuImages(false);
+    this.menuArrowSprite.node.active = false;
     this.menuBgSprite.node.active = true;
     this.menuBgSprite.node.setPosition(0, 20);
     this.menuBgSprite.node.setContentSize(960, 544);
@@ -570,6 +687,9 @@ cc.Class({
     this.hudPanelSprite.node.setPosition(0, 246);
     this.hudPanelSprite.node.setContentSize(760, 58);
     this.messagePanelSprite.node.active = false;
+    this.pauseSprite.node.active = false;
+    this.hideEffectSprites();
+    this.hideScoreSprites();
     this.hideResultLabels();
     this.titleLabel.node.active = true;
     this.superLabel.node.active = false;
@@ -580,7 +700,10 @@ cc.Class({
     this.startLabel.node.active = false;
     this.levelLabel.node.active = false;
     this.hudLabel.string = "";
-    if (this.audioSource && this.bgmClip) this.audioSource.play();
+    if (this.audioSource) {
+      this.audioSource.clip = index === 0 ? (this.bgmClip || this.bgm2Clip) : (this.bgm2Clip || this.bgm3Clip || this.bgmClip);
+      if (this.audioSource.clip) this.audioSource.play();
+    }
   },
 
   makeEditableLevel(index, fallbackLevel) {
@@ -651,15 +774,18 @@ cc.Class({
 
   showHudIcons() {
     this.lifeIcon.node.setPosition(-352, 248);
+    this.multipleIcon.node.setPosition(-304, 248);
     this.worldIcon.node.setPosition(60, 248);
     this.timerIcon.node.setPosition(385, 248);
     this.lifeIcon.node.active = true;
+    this.multipleIcon.node.active = !!this.frames.multiple;
     this.worldIcon.node.active = !!this.frames.world;
     this.timerIcon.node.active = true;
   },
 
   hideHudIcons() {
     this.lifeIcon.node.active = false;
+    this.multipleIcon.node.active = false;
     this.worldIcon.node.active = false;
     this.timerIcon.node.active = false;
   },
@@ -710,6 +836,7 @@ cc.Class({
       vy: 0,
       onGround: false,
       big: false,
+      form: "small",
       invincible: 0,
       facing: 1,
       anim: 0,
@@ -918,6 +1045,7 @@ cc.Class({
     this.updatePlayer(dt);
     this.updateEnemies(dt);
     this.updatePowerups(dt);
+    this.updateEffects(dt);
     this.blocks.forEach((block) => {
       block.bump = Math.max(0, (block.bump || 0) - dt * 80);
     });
@@ -960,8 +1088,11 @@ cc.Class({
         enemy.alive = false;
         enemy.squash = 0.35;
         this.player.vy = enemy.type === "turtle" ? -500 : -430;
-        this.score += enemy.type === "turtle" ? 400 : 200;
-        this.playOneShot(this.stompClip);
+        const points = enemy.type === "turtle" ? 400 : 200;
+        this.score += points;
+        this.spawnEffect(enemy.x + enemy.w / 2, enemy.y + enemy.h / 2, "smoke");
+        this.spawnScore(enemy.x + enemy.w / 2, enemy.y - 12, points);
+        this.playOneShot(enemy.type === "turtle" ? (this.kickClip || this.stompClip) : this.stompClip);
       } else {
         this.hurtPlayer();
       }
@@ -999,6 +1130,7 @@ cc.Class({
     block.used = true;
     block.bump = 12;
     this.score += 100;
+    this.spawnScore(block.x + block.w / 2, block.y - 22, 100);
     this.spawnPowerup(block);
     this.playOneShot(this.coinClip);
   },
@@ -1015,6 +1147,8 @@ cc.Class({
       alive: true,
       bob: 0,
     });
+    this.spawnEffect(block.x + block.w / 2, block.y - 42, "spark");
+    this.playOneShot(this.powerAppearClip);
   },
 
   updatePowerups(dt) {
@@ -1036,15 +1170,48 @@ cc.Class({
       item.alive = false;
       if (!this.player.big) {
         this.player.big = true;
+        this.player.form = this.levelIndex === 1 ? "tanuki" : "fire";
         this.player.h = 58;
         this.player.y -= 16;
       }
       this.score += 500;
+      this.spawnEffect(item.x + item.w / 2, item.y + item.h / 2, "spark");
+      this.spawnScore(item.x + item.w / 2, item.y - 18, 500);
       this.playOneShot(this.powerClip);
     });
   },
 
+  updateEffects(dt) {
+    this.effects = (this.effects || []).filter((item) => {
+      item.life -= dt;
+      item.age += dt;
+      return item.life > 0;
+    });
+    this.scorePopups = (this.scorePopups || []).filter((item) => {
+      item.life -= dt;
+      item.y -= dt * 46;
+      return item.life > 0;
+    });
+  },
+
+  spawnEffect(x, y, type) {
+    this.effects.push({ x, y, type, life: 0.45, age: 0 });
+  },
+
+  spawnScore(x, y, value) {
+    this.scorePopups.push({ x, y, value, life: 0.8 });
+  },
+
   hurtPlayer() {
+    if (this.player && this.player.big && this.player.invincible <= 0) {
+      this.player.big = false;
+      this.player.form = "small";
+      this.player.h = 42;
+      this.player.invincible = 1.8;
+      this.spawnEffect(this.player.x + this.player.w / 2, this.player.y + this.player.h / 2, "smoke");
+      this.playOneShot(this.powerDownClip || this.hurtClip);
+      return;
+    }
     this.lives -= 1;
     this.playOneShot(this.hurtClip);
     if (this.lives <= 0) {
@@ -1052,7 +1219,7 @@ cc.Class({
       this.resultBonus = 0;
       this.message = "GAME OVER";
       if (this.audioSource) this.audioSource.stop();
-      this.playOneShot(this.gameOverClip);
+      this.playOneShot(this.gameOverAltClip || this.gameOverClip);
       return;
     }
     this.player = this.makePlayer();
@@ -1089,6 +1256,8 @@ cc.Class({
       this.hideBlockSprites();
       this.hideDecorSprites();
       this.hidePowerupSprites();
+      this.hideEffectSprites();
+      this.hideScoreSprites();
       this.flagSprite.node.active = false;
       this.hudPanelSprite.node.active = false;
       this.messagePanelSprite.node.active = false;
@@ -1102,6 +1271,8 @@ cc.Class({
       this.hideBlockSprites();
       this.hideDecorSprites();
       this.hidePowerupSprites();
+      this.hideEffectSprites();
+      this.hideScoreSprites();
       this.flagSprite.node.active = false;
       this.hudPanelSprite.node.active = false;
       this.messagePanelSprite.node.active = false;
@@ -1114,6 +1285,8 @@ cc.Class({
     this.syncBlockSprites();
     this.syncPowerupSprites();
     this.syncGameSprites();
+    this.syncEffectSprites();
+    this.syncScoreSprites();
     this.syncFlagSprite();
 
     if (this.state === "clear" || this.state === "over") {
@@ -1126,9 +1299,14 @@ cc.Class({
     const showMessage = !!this.message;
     this.messagePanelSprite.node.active = showMessage && !!this.frames.textArea;
     if (showMessage) {
+      if (this.frames.textArea) this.messagePanelSprite.spriteFrame = this.frames.textArea;
+      this.pauseSprite.node.active = this.state === "paused" && !!this.frames.pause;
+      this.pauseSprite.node.setPosition(0, 16);
+      this.pauseSprite.node.setContentSize(360, 180);
       this.messagePanelSprite.node.setPosition(0, 8);
       this.messagePanelSprite.node.setContentSize(360, 100);
     }
+    if (!showMessage) this.pauseSprite.node.active = false;
     this.infoLabel.node.active = showMessage;
     this.infoLabel.node.color = new cc.Color(38, 64, 86);
     this.infoLabel.node.setPosition(0, this.state === "paused" ? 8 : -18);
@@ -1139,7 +1317,9 @@ cc.Class({
 
   showResultOverlay() {
     const cleared = this.state === "clear";
-    this.messagePanelSprite.node.active = !!this.frames.textArea;
+    this.pauseSprite.node.active = false;
+    if (this.frames.textAreaLarge) this.messagePanelSprite.spriteFrame = this.frames.textAreaLarge;
+    this.messagePanelSprite.node.active = !!(this.frames.textAreaLarge || this.frames.textArea);
     this.messagePanelSprite.node.setPosition(0, 8);
     this.messagePanelSprite.node.setContentSize(610, 184);
     this.infoLabel.node.active = false;
@@ -1171,7 +1351,9 @@ cc.Class({
       const walking = this.player.onGround && Math.abs(this.player.vx) > 10;
       const jumping = !this.player.onGround;
       const playerFrames = this.player.big
-        ? (this.frames.marioBigFrames || this.frames.marioSmallFrames || [this.frames.marioSmall])
+        ? (this.player.form === "tanuki"
+          ? (this.frames.marioTanukiFrames || this.frames.marioBigFrames || this.frames.marioSmallFrames || [this.frames.marioSmall])
+          : (this.frames.marioFireFrames || this.frames.marioBigFrames || this.frames.marioSmallFrames || [this.frames.marioSmall]))
         : (this.frames.marioSmallFrames || [this.frames.marioSmall]);
       const selectedFrame = this.pickMarioFrame(playerFrames, walking, jumping);
       this.playerSprite.node.active = true;
@@ -1356,6 +1538,70 @@ cc.Class({
     }
   },
 
+  syncEffectSprites() {
+    let index = 0;
+    (this.effects || []).forEach((item) => {
+      const visibleX = item.x - this.camera;
+      if (visibleX < -80 || visibleX > this.VIEW_W + 80) return;
+      while (this.effectSprites.length <= index) {
+        const sprite = this.makeSpriteNode(`EffectSprite${this.effectSprites.length + 1}`, 0, 0, 42, 42);
+        sprite.node.active = false;
+        this.effectSprites.push(sprite);
+      }
+      const frames = item.type === "spark" ? (this.frames.effectFrames || []) : [];
+      const frame = frames.length
+        ? frames[Math.min(frames.length - 1, Math.floor(item.age / 0.12))]
+        : this.frames.smoke;
+      if (!frame) return;
+      const sprite = this.effectSprites[index];
+      sprite.spriteFrame = frame;
+      sprite.node.active = true;
+      sprite.node.opacity = Math.max(60, Math.floor(255 * (item.life / 0.45)));
+      sprite.node.setContentSize(item.type === "spark" ? 38 : 42, item.type === "spark" ? 38 : 40);
+      sprite.node.setPosition(
+        item.x - this.camera - this.VIEW_W / 2,
+        this.VIEW_H / 2 - item.y
+      );
+      index += 1;
+    });
+    for (let i = index; i < this.effectSprites.length; i += 1) this.effectSprites[i].node.active = false;
+  },
+
+  syncScoreSprites() {
+    let index = 0;
+    (this.scorePopups || []).forEach((item) => {
+      const visibleX = item.x - this.camera;
+      if (visibleX < -80 || visibleX > this.VIEW_W + 80) return;
+      const frame = this.scoreFrameForValue(item.value);
+      if (!frame) return;
+      while (this.scoreSprites.length <= index) {
+        const sprite = this.makeSpriteNode(`ScoreSprite${this.scoreSprites.length + 1}`, 0, 0, 58, 22);
+        sprite.node.active = false;
+        this.scoreSprites.push(sprite);
+      }
+      const sprite = this.scoreSprites[index];
+      sprite.spriteFrame = frame;
+      sprite.node.active = true;
+      sprite.node.opacity = Math.max(80, Math.floor(255 * item.life / 0.8));
+      sprite.node.setContentSize(54, 18);
+      sprite.node.setPosition(
+        item.x - this.camera - this.VIEW_W / 2,
+        this.VIEW_H / 2 - item.y
+      );
+      index += 1;
+    });
+    for (let i = index; i < this.scoreSprites.length; i += 1) this.scoreSprites[i].node.active = false;
+  },
+
+  scoreFrameForValue(value) {
+    const frames = this.frames.scoreFrames || [];
+    if (!frames.length) return null;
+    if (value >= 500) return frames[4] || frames[frames.length - 1];
+    if (value >= 400) return frames[3] || frames[0];
+    if (value >= 200) return frames[1] || frames[0];
+    return frames[0];
+  },
+
   decorFrame(type) {
     if (type === "hill") return this.frames.hillTile;
     if (type === "bush") return this.frames.bushTile;
@@ -1416,6 +1662,18 @@ cc.Class({
     });
   },
 
+  hideEffectSprites() {
+    this.effectSprites.forEach((sprite) => {
+      sprite.node.active = false;
+    });
+  },
+
+  hideScoreSprites() {
+    this.scoreSprites.forEach((sprite) => {
+      sprite.node.active = false;
+    });
+  },
+
   syncFlagSprite() {
     if (!this.flagSprite) return;
     if (!this.frames.flag || !this.level) {
@@ -1461,14 +1719,26 @@ cc.Class({
   onTouchEnd(event) {
     const point = this.node.convertToNodeSpaceAR(event.getLocation());
     if (this.state === "menu") {
-      if (this.pointInButton(point, this.menuButtons[0])) this.startGame(0);
-      if (this.pointInButton(point, this.menuButtons[1])) this.showLevelSelect();
+      if (this.pointInButton(point, this.menuButtons[0])) {
+        this.blueButtonSprite.spriteFrame = this.frames.buttonBluePress || this.blueButtonSprite.spriteFrame;
+        this.startGame(0);
+      }
+      if (this.pointInButton(point, this.menuButtons[1])) {
+        this.orangeButtonSprite.spriteFrame = this.frames.buttonOrangePress || this.orangeButtonSprite.spriteFrame;
+        this.showLevelSelect();
+      }
       return;
     }
 
     if (this.state === "levels") {
-      if (this.pointInButton(point, { x: -150, y: 10, w: 250, h: 72 })) this.startGame(0);
-      if (this.pointInButton(point, { x: 150, y: 10, w: 250, h: 72 })) this.startGame(1);
+      if (this.pointInButton(point, { x: -150, y: 10, w: 250, h: 72 })) {
+        this.blueButtonSprite.spriteFrame = this.frames.buttonBluePress || this.blueButtonSprite.spriteFrame;
+        this.startGame(0);
+      }
+      if (this.pointInButton(point, { x: 150, y: 10, w: 250, h: 72 })) {
+        this.orangeButtonSprite.spriteFrame = this.frames.buttonOrangePress || this.orangeButtonSprite.spriteFrame;
+        this.startGame(1);
+      }
     }
   },
 
