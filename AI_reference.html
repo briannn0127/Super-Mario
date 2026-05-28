@@ -4,32 +4,191 @@
   <meta charset="utf-8">
   <title>AI Reference</title>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.5; margin: 42px; color: #1f2937; }
-    h1 { margin-top: 0; }
-    code { background: #f1f5f9; padding: 2px 5px; border-radius: 4px; }
-    section { margin-bottom: 24px; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+      margin: 42px;
+      color: #1f2937;
+      font-size: 13px;
+    }
+    h1 { margin: 0 0 14px; font-size: 28px; }
+    h2 { margin: 22px 0 8px; font-size: 18px; color: #0f3558; }
+    h3 { margin: 14px 0 6px; font-size: 15px; color: #17466f; }
+    code {
+      background: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 14px;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 7px;
+      vertical-align: top;
+    }
+    th { background: #eaf4ff; text-align: left; }
+    ul { margin-top: 6px; }
+    .note { color: #475569; }
   </style>
 </head>
 <body>
   <h1>AI Reference</h1>
-  <section>
-    <h2>AI Tool(s) Used</h2>
-    <p>OpenAI ChatGPT / Codex was used as an implementation and debugging assistant.</p>
-  </section>
-  <section>
-    <h2>Scope of Usage</h2>
-    <p>Main assisted files:</p>
-    <ul>
-      <li><code>assets/Scripts/WebMarioGame.js</code>, lines 12-1060: Cocos Creator 2.4.8 game logic, resource loading, state flow, physics-style collision, asset-based map design, scenery layering, visible power-up items, animation, UI, and audio.</li>
-      <li><code>assets/menu.fire</code>: default Cocos Creator scene containing Canvas, Main Camera, and the Game node.</li>
-      <li><code>README.md</code>: scoring checklist, run instructions, asset list, and submission notes.</li>
-    </ul>
-    <p>Representative prompts included: "詳細參考pdf要求完成作業", "要用2.4.8版本", "盡量全部用他給的素材", and "詳細閱讀滿足作業要求".</p>
-  </section>
-  <section>
-    <h2>Refinement & Explanation</h2>
-    <p>The code was revised into a Cocos Creator 2.4.8 2D project using global <code>cc</code> APIs and a <code>cc.Class</code> component. The final implementation includes menu flow, level select, two maps, gravity, collision, camera following, static walls, question blocks, visible mushroom power-ups, player damage, respawn, stomp-only enemy defeat, HUD, timer, atlas-based player/enemy animation, and one-shot sound effects layered over BGM.</p>
-    <p>The visual implementation was refined to use the provided assignment assets where possible: menu background/title/buttons, HUD icons, Mario and Goomba atlases, flag image, tile sprites, pipe/platform/wall tiles, decorative hills/bushes/clouds, and assignment audio files.</p>
-  </section>
+
+  <h2>AI Tool(s) Used</h2>
+  <p>OpenAI ChatGPT / Codex was used as an implementation, debugging, documentation, and deployment assistant for this assignment.</p>
+
+  <h2>Project Context</h2>
+  <p>
+    Assignment 02 requires a Cocos Creator 2.4.x Mario-style game with start menu, level select, gameplay, game over / restart flow,
+    physics, player controls, enemies, question blocks, animation, sound effects, UI, appearance, Git commits, README, and optional bonus features.
+  </p>
+
+  <h2>Scope of Usage</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Location</th>
+        <th>AI-Assisted Scope</th>
+        <th>Refinement / Final Logic</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>assets/Scripts/WebMarioGame.js</code>, lines 12-138</td>
+        <td>Helped set up the Cocos Creator 2.4.8 component structure, game state variables, scene nodes, event listeners, and responsive page-fit CSS.</td>
+        <td>The final code uses Cocos 2.x global <code>cc</code> APIs and a single <code>cc.Class</code> component attached to the scene's Game node.</td>
+      </tr>
+      <tr>
+        <td><code>assets/Scripts/WebMarioGame.js</code>, lines 141-598</td>
+        <td>Helped implement Firebase Realtime Database leaderboard UI, score submission, score loading, and graceful error handling.</td>
+        <td>The final version uses REST requests to <code>/leaderboard.json</code>, sorts scores on the client, and shows an error row instead of crashing if Firebase cannot be loaded.</td>
+      </tr>
+      <tr>
+        <td><code>assets/Scripts/WebMarioGame.js</code>, lines 600-805</td>
+        <td>Helped organize asset loading for provided images, atlases, bitmap fonts, audio, player sprites, enemy sprites, effects, tiles, and UI images.</td>
+        <td>The implementation was revised to prioritize the provided <code>AS2_source</code> assets instead of hand-drawn placeholder shapes.</td>
+      </tr>
+      <tr>
+        <td><code>assets/Scripts/WebMarioGame.js</code>, lines 806-999</td>
+        <td>Helped refine the start menu, level select UI, asset-based menu buttons, editable prefab support, and text styling.</td>
+        <td>The final menu uses provided menu background, title-like styled labels, button art, and corrected hit detection based on actual sprite size and position.</td>
+      </tr>
+      <tr>
+        <td><code>assets/Scripts/WebMarioGame.js</code>, lines 1001-1214</td>
+        <td>Helped build game initialization, player reset, enemy setup, HUD setup, and Cocos sprite visibility switching between menu and gameplay.</td>
+        <td>The final code separates menu, level select, gameplay, pause, clear, and game over states.</td>
+      </tr>
+      <tr>
+        <td><code>assets/Scripts/WebMarioGame.js</code>, lines 1215-1390</td>
+        <td>Helped design two Mario-style levels with ground, walls, pipes, clouds, brick platforms, question blocks, enemies, decorations, and flags.</td>
+        <td>The second level was refined to be more difficult with more parkour sections and less reachable question blocks.</td>
+      </tr>
+      <tr>
+        <td><code>assets/Scripts/WebMarioGame.js</code>, lines 1391-1690</td>
+        <td>Helped implement keyboard controls, gravity, collision, camera follow, enemy movement, stomp-only enemy defeat, question block interaction, mushroom movement, and player damage.</td>
+        <td>The final behavior includes big Mario shrinking on enemy damage, small Mario losing life, respawn, out-of-bounds penalty, and enemy patrol correction.</td>
+      </tr>
+      <tr>
+        <td><code>assets/Scripts/WebMarioGame.js</code>, lines 1691-2107</td>
+        <td>Helped implement HUD, result overlay, sprite synchronization, tile rendering, decorations, power-up rendering, effects, and animation frame selection.</td>
+        <td>The final drawing logic uses Cocos Sprite nodes and provided sprite frames instead of simple graphics rectangles where possible.</td>
+      </tr>
+      <tr>
+        <td><code>assets/Scripts/WebMarioGame.js</code>, lines 2108-2150</td>
+        <td>Helped debug menu and level-select button hitboxes after Firebase deployment.</td>
+        <td>The final code checks the current sprite node position and size so the clickable region matches the visible button.</td>
+      </tr>
+      <tr>
+        <td><code>build/web-desktop/index.html</code>, <code>build/web-desktop/leaderboard-ui.js</code>, <code>firebase.json</code></td>
+        <td>Helped deploy to Firebase Hosting, add no-cache headers, add a standalone leaderboard access button, and keep the build page fitted to the browser viewport.</td>
+        <td>The final Firebase deployment loads the leaderboard correctly and prevents stale cached build files from hiding updated behavior.</td>
+      </tr>
+      <tr>
+        <td><code>README.md</code> and <code>AI_reference.pdf</code></td>
+        <td>Helped organize completed scoring items, run instructions, Firebase link, Git notes, submission notes, and AI usage documentation.</td>
+        <td>The final documentation was rewritten to match the assignment checklist and to disclose AI usage clearly.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Representative Prompts and AI Responses</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Prompt Used</th>
+        <th>AI Response / Result</th>
+        <th>Final Human Refinement</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>"詳細參考pdf要求完成作業"</td>
+        <td>AI read the assignment requirements and identified required items: Cocos Creator Mario-style game, menu, level select, game view, physics, enemies, blocks, animations, sound, UI, README, Git, Firebase deployment, and AI reference.</td>
+        <td>The final implementation was adjusted against the official scoring checklist extracted from the assignment slides.</td>
+      </tr>
+      <tr>
+        <td>"不是cocos3D2.4.8是cocos2.4.8"</td>
+        <td>AI corrected the approach to target Cocos Creator 2.4.8 2D APIs instead of Creator3D.</td>
+        <td>The project uses a 2D Canvas scene and <code>cc.Class</code> script compatible with Creator 2.4.8.</td>
+      </tr>
+      <tr>
+        <td>"請全部用提供的素材不要自己畫"</td>
+        <td>AI replaced plain placeholder graphics with provided sprites, atlases, tiles, menu images, player, enemies, items, flag, UI, and audio assets.</td>
+        <td>Some labels remain as dynamic UI text, while visible game objects use provided art where available.</td>
+      </tr>
+      <tr>
+        <td>"太陽春了，需要把關卡用得更多元素，牆體之類的可以跑酷"</td>
+        <td>AI expanded the level design with more pipes, wall blocks, cloud platforms, gaps, stairs, question blocks, and decorative scenery.</td>
+        <td>The final level data includes two different worlds with different difficulty and more platforming routes.</td>
+      </tr>
+      <tr>
+        <td>"大隻的碰到敵人會變小隻而不是直接死掉"</td>
+        <td>AI modified the player damage flow so big Mario powers down first and small Mario loses a life.</td>
+        <td>The final code adds power-down state, height adjustment, invincibility, and power-down sound.</td>
+      </tr>
+      <tr>
+        <td>"請幫我在目前 Cocos Creator 2.4.x Mario 專案加入 Firebase Leaderboard 功能"</td>
+        <td>AI added Firebase Realtime Database score submission, score loading, input name form, and top 10 leaderboard display.</td>
+        <td>The final implementation avoids requiring Firebase database indexing by sorting scores on the client.</td>
+      </tr>
+      <tr>
+        <td>"deploy後的排行榜對了，但是按鈕位置好像比顯示得更下面"</td>
+        <td>AI diagnosed a mismatch between visible button sprites and fixed hitbox coordinates.</td>
+        <td>The final input code uses live sprite position and content size for menu and level-select click detection.</td>
+      </tr>
+      <tr>
+        <td>"好了，參考上次這個幫我完成AIreference跟readme"</td>
+        <td>AI rewrote the README and AI usage report based on the previous project style and the assignment requirements.</td>
+        <td>The final files summarize features, scoring items, links, Git commits, and AI-assisted code locations.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Refinement and Explanation</h2>
+  <p>
+    AI-generated suggestions were not copied blindly. The implementation was repeatedly tested in Cocos Creator preview and Firebase Hosting.
+    Several fixes were made after visual testing, including asset cropping, mushroom movement, enemy movement, turtle behavior, big Mario damage,
+    leaderboard loading, cache control, and menu button hitbox alignment.
+  </p>
+  <p>
+    The main game logic uses simple rectangle-based physics suitable for this assignment: each object has position, size, velocity, and collision state.
+    The player and enemies are moved by velocity and gravity, then corrected against solid blocks. Enemy defeat is only triggered when the player is
+    falling onto the enemy from above; side contact damages the player.
+  </p>
+  <p>
+    The Firebase leaderboard uses the Realtime Database REST API. Scores are posted as:
+    <code>{ name: string, score: number, createdAt: timestamp }</code>. The game loads all leaderboard records, sorts them by score in descending order,
+    and displays the top 10. This avoids requiring a Firebase <code>.indexOn</code> rule for <code>score</code>.
+  </p>
+
+  <h2>Statement</h2>
+  <p>
+    AI tools were used as described above. The final project was reviewed, modified, tested, and integrated by the student in the local Cocos Creator
+    project and Firebase deployment.
+  </p>
 </body>
 </html>
