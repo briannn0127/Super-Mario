@@ -186,6 +186,14 @@ cc.Class({
     outline(this.levelLabel, new cc.Color(255, 255, 255), 2);
   },
 
+  styleMenuHintLabel() {
+    this.infoLabel.node.color = new cc.Color(38, 64, 86);
+    let outline = this.infoLabel.node.getComponent(cc.LabelOutline);
+    if (!outline) outline = this.infoLabel.node.addComponent(cc.LabelOutline);
+    outline.color = new cc.Color(255, 255, 255);
+    outline.width = 2;
+  },
+
   styleResultLabels() {
     const labels = [this.resultTitleLabel, this.resultScoreLabel, this.resultHintLabel];
     labels.forEach((label) => {
@@ -342,6 +350,7 @@ cc.Class({
     this.state = "menu";
     this.message = "";
     this.resultBonus = 0;
+    this.hideEditableLevelPrefabs();
     this.titleLabel.string = "Web Mario";
     this.showMenuImages(true);
     this.titleSprite.node.active = false;
@@ -379,7 +388,7 @@ cc.Class({
     this.courseLabel.lineHeight = 32;
     this.courseLabel.string = "WORLD 1 ADVENTURE";
     this.infoLabel.node.setPosition(0, -126);
-    this.infoLabel.node.color = cc.Color.WHITE;
+    this.styleMenuHintLabel();
     this.infoLabel.fontSize = 22;
     this.infoLabel.lineHeight = 30;
     this.infoLabel.string = "A/D Move    W/Space Jump    P Pause";
@@ -468,6 +477,7 @@ cc.Class({
   showLevelSelect() {
     this.state = "levels";
     this.resultBonus = 0;
+    this.hideEditableLevelPrefabs();
     this.titleLabel.string = "Level Select";
     this.showMenuImages(true);
     this.titleSprite.node.active = false;
@@ -499,7 +509,7 @@ cc.Class({
     this.titleLabel.node.setPosition(0, 154);
     this.titleLabel.fontSize = 56;
     this.infoLabel.node.setPosition(0, -136);
-    this.infoLabel.node.color = cc.Color.WHITE;
+    this.styleMenuHintLabel();
     this.infoLabel.fontSize = 24;
     this.infoLabel.lineHeight = 34;
     this.infoLabel.string = "1: World 1-1      2: World 1-2      ESC: Back";
@@ -658,6 +668,19 @@ cc.Class({
     Object.keys(this.hudLabels).forEach((key) => {
       this.hudLabels[key].node.active = false;
     });
+  },
+
+  hideEditableLevelPrefabs() {
+    const root = this.node.parent || this.node;
+    const visit = (node) => {
+      if (!node) return;
+      if (node.name === "Level1Editable" || node.name === "Level2Editable") {
+        node.active = false;
+        return;
+      }
+      node.children.forEach(visit);
+    };
+    visit(root);
   },
 
   hideResultLabels() {
@@ -1043,6 +1066,7 @@ cc.Class({
     g.clear();
 
     if (this.state === "menu") {
+      this.hideEditableLevelPrefabs();
       this.hideBlockSprites();
       this.hideDecorSprites();
       this.hidePowerupSprites();
@@ -1055,6 +1079,7 @@ cc.Class({
     }
 
     if (this.state === "levels") {
+      this.hideEditableLevelPrefabs();
       this.hideBlockSprites();
       this.hideDecorSprites();
       this.hidePowerupSprites();
