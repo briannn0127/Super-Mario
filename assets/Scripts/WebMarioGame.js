@@ -1184,7 +1184,7 @@ cc.Class({
       item.alive = false;
       if (!this.player.big) {
         this.player.big = true;
-        this.player.form = this.levelIndex === 1 ? "tanuki" : "fire";
+        this.player.form = "big";
         this.player.h = 58;
         this.player.y -= 16;
       }
@@ -1221,6 +1221,7 @@ cc.Class({
       this.player.big = false;
       this.player.form = "small";
       this.player.h = 42;
+      this.player.y += 16;
       this.player.invincible = 1.8;
       this.spawnEffect(this.player.x + this.player.w / 2, this.player.y + this.player.h / 2, "smoke");
       this.playOneShot(this.powerDownClip || this.hurtClip);
@@ -1365,9 +1366,7 @@ cc.Class({
       const walking = this.player.onGround && Math.abs(this.player.vx) > 10;
       const jumping = !this.player.onGround;
       const playerFrames = this.player.big
-        ? (this.player.form === "tanuki"
-          ? (this.frames.marioTanukiFrames || this.frames.marioBigFrames || this.frames.marioSmallFrames || [this.frames.marioSmall])
-          : (this.frames.marioFireFrames || this.frames.marioBigFrames || this.frames.marioSmallFrames || [this.frames.marioSmall]))
+        ? (this.frames.marioBigFrames || this.frames.marioSmallFrames || [this.frames.marioSmall])
         : (this.frames.marioSmallFrames || [this.frames.marioSmall]);
       const selectedFrame = this.pickMarioFrame(playerFrames, walking, jumping);
       this.playerSprite.node.active = true;
