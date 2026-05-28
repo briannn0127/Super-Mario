@@ -1,11 +1,7 @@
 (function () {
   "use strict";
 
-  var firebaseConfig = {
-    databaseURL: "https://supermario-777-default-rtdb.firebaseio.com",
-  };
-
-  var databaseUrl = firebaseConfig.databaseURL.replace(/\/$/, "");
+  var databaseUrl = "https://supermario-777-default-rtdb.firebaseio.com";
 
   function forceViewportFit() {
     document.documentElement.style.width = "100%";
@@ -48,7 +44,6 @@
     ".wm-public-board .rank{color:#ff4438}",
     ".wm-public-board .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}",
     ".wm-public-board button{margin-top:12px;width:100%;height:38px;border:3px solid #1d3858;background:#6ad8ff;color:#1f405c;font-weight:900;font-size:14px;cursor:pointer}",
-    "@media (max-width:700px){.wm-public-board-button{right:8px;top:8px;min-width:132px;height:38px;font-size:14px}.wm-public-board h2{font-size:25px}}",
   ].join("");
   document.head.appendChild(style);
 
@@ -68,9 +63,13 @@
   });
   window.addEventListener("resize", forceViewportFit);
 
-  function renderScores(scores) {
+  function renderScores(scores, errorText) {
     var list = board.querySelector("ol");
     list.innerHTML = "";
+    if (errorText) {
+      list.innerHTML = '<li><span class="rank">!</span><span class="name">LOAD FAILED</span><span>ERR</span></li>';
+      return;
+    }
     if (!scores.length) {
       list.innerHTML = '<li><span class="rank">--</span><span class="name">NO SCORES YET</span><span>000000</span></li>';
       return;
@@ -80,15 +79,14 @@
       li.innerHTML =
         '<span class="rank">' + String(index + 1).padStart(2, "0") + '</span>' +
         '<span class="name"></span>' +
-        '<span>' + String(entry.score || 0).padStart(6, "0") + '</span>';
+        '<span>' + String(Number(entry.score) || 0).padStart(6, "0") + '</span>';
       li.querySelector(".name").textContent = entry.name || "PLAYER";
       list.appendChild(li);
     });
   }
 
   function loadScores() {
-    var url = databaseUrl + "/leaderboard.json";
-    return fetch(url)
+    return fetch(databaseUrl + "/leaderboard.json")
       .then(function (response) {
         if (!response.ok) throw new Error("HTTP " + response.status);
         return response.json();
@@ -97,13 +95,13 @@
         var scores = Object.keys(data || {}).map(function (key) {
           return data[key];
         }).sort(function (a, b) {
-          return (b.score || 0) - (a.score || 0);
-        });
+          return (Number(b.score) || 0) - (Number(a.score) || 0);
+        }).slice(0, 10);
         renderScores(scores);
       })
       .catch(function (err) {
         console.error("Firebase leaderboard load failed:", err);
-        renderScores([]);
+        renderScores([], String(err));
       });
   }
 

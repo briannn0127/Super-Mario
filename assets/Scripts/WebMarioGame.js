@@ -569,6 +569,7 @@ cc.Class({
       })
       .catch((err) => {
         console.error("Firebase leaderboard load failed:", err);
+        this.renderLeaderboardError();
       });
   },
 
@@ -586,6 +587,13 @@ cc.Class({
       li.innerHTML = `<span class="wm-rank">${index + 1}</span><span class="wm-name">${name}</span><span>${Number(row.score) || 0}</span>`;
       this.leaderboardList.appendChild(li);
     });
+  },
+
+  renderLeaderboardError() {
+    this.leaderboardList.innerHTML = "";
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="wm-rank">!</span><span class="wm-name">LOAD FAILED</span><span>ERR</span>`;
+    this.leaderboardList.appendChild(li);
   },
 
   loadImageAssets() {
