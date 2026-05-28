@@ -554,7 +554,7 @@ cc.Class({
 
   refreshLeaderboard() {
     if (!this.firebaseReady || !this.leaderboardList) return Promise.resolve();
-    const url = `${this.firebaseDatabaseUrl}/leaderboard.json?orderBy=%22score%22&limitToLast=10`;
+    const url = `${this.firebaseDatabaseUrl}/leaderboard.json`;
     return fetch(url)
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);

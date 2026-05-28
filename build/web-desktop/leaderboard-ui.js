@@ -6,6 +6,37 @@
   };
 
   var databaseUrl = firebaseConfig.databaseURL.replace(/\/$/, "");
+
+  function forceViewportFit() {
+    document.documentElement.style.width = "100%";
+    document.documentElement.style.height = "100%";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.width = "100%";
+    document.body.style.height = "100%";
+    document.body.style.overflow = "hidden";
+    document.body.style.margin = "0";
+    var gameDiv = document.getElementById("GameDiv");
+    if (gameDiv) {
+      gameDiv.style.width = "100vw";
+      gameDiv.style.height = "100vh";
+      gameDiv.style.margin = "0";
+      gameDiv.style.border = "0";
+      gameDiv.style.overflow = "hidden";
+    }
+  }
+
+  if (window.fetch && !window.__webMarioLeaderboardFetchFix) {
+    window.__webMarioLeaderboardFetchFix = true;
+    var originalFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+      var url = typeof input === "string" ? input : input && input.url;
+      if (url && url.indexOf(databaseUrl + "/leaderboard.json?orderBy=") === 0) {
+        return originalFetch(databaseUrl + "/leaderboard.json", init);
+      }
+      return originalFetch(input, init);
+    };
+  }
+
   var style = document.createElement("style");
   style.textContent = [
     ".wm-public-board-button{position:fixed;right:14px;top:14px;z-index:9998;min-width:166px;height:44px;border:4px solid #1d3858;background:linear-gradient(#fff48a,#ffb13b);color:#1f405c;font-family:Arial,Helvetica,sans-serif;font-size:17px;font-weight:900;text-shadow:1px 1px 0 #fff;box-shadow:0 5px 0 #101d31,0 10px 20px rgba(0,0,0,.3);cursor:pointer}",
@@ -31,9 +62,11 @@
   board.innerHTML = '<h2>LEADERBOARD</h2><p>TOP 10 SCORES</p><ol></ol><button type="button">CLOSE</button>';
 
   document.addEventListener("DOMContentLoaded", function () {
+    forceViewportFit();
     document.body.appendChild(openButton);
     document.body.appendChild(board);
   });
+  window.addEventListener("resize", forceViewportFit);
 
   function renderScores(scores) {
     var list = board.querySelector("ol");
@@ -54,7 +87,7 @@
   }
 
   function loadScores() {
-    var url = databaseUrl + '/leaderboard.json?orderBy=%22score%22&limitToLast=10';
+    var url = databaseUrl + "/leaderboard.json";
     return fetch(url)
       .then(function (response) {
         if (!response.ok) throw new Error("HTTP " + response.status);
