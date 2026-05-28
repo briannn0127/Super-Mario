@@ -262,12 +262,20 @@ cc.Class({
       this.frames.marioBig = frames[0];
     });
     this.loadSpriteAtlas("AS2_source/enemies/Goomba", (atlas) => {
-      const frames = ["Goomba_0", "Goomba_1", "Goomba_2"]
-        .map((name) => atlas.getSpriteFrame(name))
-        .filter((frame) => !!frame);
+      const frames = this.collectAtlasFrames(atlas, "Goomba", 5);
       this.frames.goombaFrames = frames;
       this.frames.goomba = frames[0];
       this.menuGoombaSprite.spriteFrame = frames[0];
+    });
+    this.loadSpriteAtlas("AS2_source/enemies/Turtle", (atlas) => {
+      const frames = this.collectAtlasFrames(atlas, "turtle", 6);
+      this.frames.turtleFrames = frames;
+      this.frames.turtle = frames[0];
+    });
+    this.loadSpriteAtlas("AS2_source/enemies/Flower", (atlas) => {
+      const frames = this.collectAtlasFrames(atlas, "flower", 2);
+      this.frames.flowerFrames = frames;
+      this.frames.flower = frames[0];
     });
     this.loadSpriteFrame("AS2_source/pictures/flag", (frame) => {
       this.frames.flag = frame;
@@ -326,7 +334,7 @@ cc.Class({
   collectAtlasFrames(atlas, prefix, maxIndex) {
     const frames = [];
     for (let i = 0; i <= maxIndex; i += 1) {
-      const frame = atlas.getSpriteFrame(`${prefix}_${i}`);
+      const frame = atlas.getSpriteFrame(`${prefix}_${i}`) || atlas.getSpriteFrame(`${prefix}_${i}.png`);
       if (frame) frames.push(frame);
     }
     return frames;
@@ -535,9 +543,10 @@ cc.Class({
     this.enemies = this.level.enemies.map((enemy) => ({
       x: enemy.x,
       y: enemy.y,
-      w: 34,
-      h: 32,
-      vx: -65,
+      type: enemy.type || "goomba",
+      w: enemy.type === "flower" ? 34 : enemy.type === "turtle" ? 38 : 34,
+      h: enemy.type === "flower" ? 58 : enemy.type === "turtle" ? 44 : 32,
+      vx: enemy.type === "flower" ? 0 : enemy.type === "turtle" ? -48 : -65,
       vy: 0,
       alive: true,
       squash: 0,
@@ -593,7 +602,9 @@ cc.Class({
       if (name.indexOf("Wall_") === 0) blocks.push(Object.assign({ type: "wall" }, rect));
       if (name.indexOf("CloudPlatform_") === 0) blocks.push(Object.assign({ type: "cloud" }, rect));
       if (name.indexOf("Question_") === 0) blocks.push(Object.assign({ type: "question", used: false, bump: 0 }, rect));
-      if (name.indexOf("Enemy_") === 0) enemies.push({ x: rect.x, y: rect.y });
+      if (name.indexOf("Enemy_Turtle") === 0) enemies.push({ type: "turtle", x: rect.x, y: rect.y });
+      else if (name.indexOf("Enemy_Flower") === 0) enemies.push({ type: "flower", x: rect.x, y: rect.y });
+      else if (name.indexOf("Enemy_") === 0) enemies.push({ type: "goomba", x: rect.x, y: rect.y });
       if (name === "Start") start = { x: rect.x, y: rect.y };
       if (name === "Flag") flag = { x: rect.x, y: rect.y };
       node.children.forEach(visit);
@@ -779,10 +790,13 @@ cc.Class({
           deco("hill", 4240, 382, 128, 96, 0.82),
         ],
         enemies: [
-          { x: 840, y: 420 },
-          { x: 1700, y: 420 },
-          { x: 2580, y: 420 },
-          { x: 3350, y: 420 },
+          { type: "goomba", x: 840, y: 420 },
+          { type: "flower", x: 629, y: 338 },
+          { type: "turtle", x: 1700, y: 416 },
+          { type: "goomba", x: 2580, y: 420 },
+          { type: "flower", x: 2959, y: 302 },
+          { type: "turtle", x: 3350, y: 416 },
+          { type: "goomba", x: 4020, y: 420 },
         ],
         flag: { x: 4300, y: 252 },
       },
@@ -858,12 +872,15 @@ cc.Class({
           deco("hill", 5240, 382, 128, 96, 0.82),
         ],
         enemies: [
-          { x: 1040, y: 420 },
-          { x: 1840, y: 420 },
-          { x: 2720, y: 420 },
-          { x: 3400, y: 420 },
-          { x: 3860, y: 420 },
-          { x: 4520, y: 420 },
+          { type: "goomba", x: 1040, y: 420 },
+          { type: "flower", x: 539, y: 338 },
+          { type: "turtle", x: 1840, y: 416 },
+          { type: "flower", x: 1919, y: 266 },
+          { type: "goomba", x: 2720, y: 420 },
+          { type: "turtle", x: 3400, y: 416 },
+          { type: "goomba", x: 3860, y: 420 },
+          { type: "flower", x: 4399, y: 266 },
+          { type: "turtle", x: 4520, y: 416 },
         ],
         flag: { x: 5120, y: 252 },
       },
@@ -932,16 +949,18 @@ cc.Class({
         enemy.squash -= dt;
         return;
       }
-      this.moveBody(enemy, dt, false);
-      if (enemy.vx === 0) enemy.vx = Math.random() > 0.5 ? 65 : -65;
+      if (enemy.type !== "flower") {
+        this.moveBody(enemy, dt, false);
+        if (enemy.vx === 0) enemy.vx = enemy.type === "turtle" ? -48 : -65;
+      }
       if (!this.hit(this.player, enemy) || this.player.invincible > 0) return;
 
       const stomp = this.player.vy > 80 && this.player.y + this.player.h - enemy.y < 20;
-      if (stomp) {
+      if (stomp && enemy.type !== "flower") {
         enemy.alive = false;
         enemy.squash = 0.35;
-        this.player.vy = -430;
-        this.score += 200;
+        this.player.vy = enemy.type === "turtle" ? -500 : -430;
+        this.score += enemy.type === "turtle" ? 400 : 200;
         this.playOneShot(this.stompClip);
       } else {
         this.hurtPlayer();
@@ -1170,16 +1189,25 @@ cc.Class({
     this.enemies.forEach((enemy, index) => {
       const sprite = this.enemySprites[index];
       if (!sprite) return;
-      sprite.node.active = !!this.frames.goomba && enemy.alive;
+      const frames = this.getEnemyFrames(enemy);
+      sprite.node.active = !!frames.length && enemy.alive;
       if (!sprite.node.active) return;
-      const goombaFrames = this.frames.goombaFrames || [this.frames.goomba];
-      sprite.spriteFrame = goombaFrames[Math.floor((Date.now() / 180) + index) % goombaFrames.length] || this.frames.goomba;
+      sprite.spriteFrame = frames[Math.floor((Date.now() / (enemy.type === "flower" ? 260 : 180)) + index) % frames.length];
       sprite.node.setPosition(
         enemy.x - this.camera - this.VIEW_W / 2 + enemy.w / 2,
         this.VIEW_H / 2 - enemy.y - enemy.h / 2
       );
-      sprite.node.setContentSize(40, 42);
+      sprite.node.setScale(enemy.vx > 0 ? -1 : 1, 1);
+      if (enemy.type === "flower") sprite.node.setContentSize(36, 58);
+      else if (enemy.type === "turtle") sprite.node.setContentSize(42, 44);
+      else sprite.node.setContentSize(40, 42);
     });
+  },
+
+  getEnemyFrames(enemy) {
+    if (enemy.type === "flower") return this.frames.flowerFrames || (this.frames.flower ? [this.frames.flower] : []);
+    if (enemy.type === "turtle") return this.frames.turtleFrames || (this.frames.turtle ? [this.frames.turtle] : []);
+    return this.frames.goombaFrames || (this.frames.goomba ? [this.frames.goomba] : []);
   },
 
   pickMarioFrame(frames, walking, jumping) {
